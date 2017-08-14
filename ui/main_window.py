@@ -15,35 +15,36 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.setupUi(self)
         self.setFixedSize(600, 400)
 
-        self.addSymbolButton.clicked.connect(self._addSymbol)
-        self.addStateButton.clicked.connect(self._addState)
+        self.addSymbolButton.clicked.connect(self._add_symbol)
+        self.addStateButton.clicked.connect(self._add_state)
 
-        self._updateTable()
-        self.transitionTable.cellChanged.connect(self._updateDFA)
+        self._update_table()
+        self.transitionTable.cellChanged.connect(self._update_dfa)
 
-    def _addSymbol(self) -> None:
-        text, ok = QInputDialog.getText(self, "Add symbol", "Symbol:")
+    def _add_symbol(self) -> None:
+        text, _ = QInputDialog.getText(self, "Add symbol", "Symbol:")
         self._dfa.add_symbol(text)
-        self._updateTable()
+        self._update_table()
 
-    def _addState(self) -> None:
-        text, ok = QInputDialog.getText(self, "Add state", "State:")
+    def _add_state(self) -> None:
+        text, _ = QInputDialog.getText(self, "Add state", "State:")
         self._dfa.add_state(text)
-        self._updateTable()
+        self._update_table()
 
-    def _updateDFA(self, y: int, x: int) -> None:
+    def _update_dfa(self, row: int, col: int) -> None:
         states = self._dfa.states()
         alphabet = self._dfa.alphabet()
-        next_state = self.transitionTable.item(y, x).text()
+        next_state = self.transitionTable.item(row, col).text()
 
         if next_state:
             try:
-                self._dfa.set_transition(states[y], alphabet[x], next_state)
-            except KeyError as e:
-                QMessageBox.information(self, "Error", e.args[0])
-                self.transitionTable.item(y, x).setText("")
+                self._dfa.set_transition(
+                    states[row], alphabet[col], next_state)
+            except KeyError as error:
+                QMessageBox.information(self, "Error", error.args[0])
+                self.transitionTable.item(row, col).setText("")
 
-    def _updateTable(self) -> None:
+    def _update_table(self) -> None:
         states = self._dfa.states()
         alphabet = self._dfa.alphabet()
 
@@ -54,9 +55,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.transitionTable.setHorizontalHeaderLabels(alphabet)
 
         table = self._dfa.transition_table()
-        for i in range(len(states)):
-            for j in range(len(alphabet)):
-                state = ""
-                if (states[i], alphabet[j]) in table:
-                    state = table[(states[i], alphabet[j])]
-                self.transitionTable.setItem(i, j, QTableWidgetItem(state))
+        for i, state in enumerate(states):
+            for j, symbol in enumerate(alphabet):
+                transition = table[(state, symbol)] \
+                    if (state, symbol) in table else ""
+                self.transitionTable.setItem(
+                    i, j, QTableWidgetItem(transition))
