@@ -1,7 +1,7 @@
 from ui.main_window_ui import Ui_MainWindow
 from automata.dfa import DFA
 from PyQt5.QtWidgets import (
-    QMainWindow, QTableWidgetItem, QInputDialog)
+    QMainWindow, QTableWidgetItem, QInputDialog, QMessageBox)
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -19,6 +19,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.addStateButton.clicked.connect(self._addState)
 
         self._updateTable()
+        self.transitionTable.cellChanged.connect(self._updateDFA)
 
     def _addSymbol(self) -> None:
         text, ok = QInputDialog.getText(self, "Add symbol", "Symbol:")
@@ -29,6 +30,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         text, ok = QInputDialog.getText(self, "Add state", "State:")
         self._dfa.add_state(text)
         self._updateTable()
+
+    def _updateDFA(self, y: int, x: int) -> None:
+        states = self._dfa.states()
+        alphabet = self._dfa.alphabet()
+        next_state = self.transitionTable.item(y, x).text()
+
+        if next_state:
+            try:
+                self._dfa.set_transition(states[y], alphabet[x], next_state)
+            except KeyError as e:
+                QMessageBox.information(self, "Error", e.args[0])
+                self.transitionTable.item(y, x).setText("")
 
     def _updateTable(self) -> None:
         states = self._dfa.states()

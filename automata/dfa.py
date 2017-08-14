@@ -28,3 +28,9 @@ class DFA():
 
     def add_state(self, state: str) -> None:
         self._states.add(state)
+
+    def set_transition(self, state: str, symbol: str, next_state: str) -> None:
+        if next_state in self._states:
+            self._transitions[(state, symbol)] = next_state
+        else:
+            raise KeyError("State {} does not exist".format(next_state))
