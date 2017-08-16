@@ -43,21 +43,11 @@
         <item>
          <widget class="QTableWidget" name="transitionTable">
           <property name="rowCount">
-           <number>1</number>
+           <number>0</number>
           </property>
           <property name="columnCount">
-           <number>1</number>
+           <number>0</number>
           </property>
-          <row>
-           <property name="text">
-            <string>-&gt;q0</string>
-           </property>
-          </row>
-          <column>
-           <property name="text">
-            <string>a</string>
-           </property>
-          </column>
          </widget>
         </item>
        </layout>
@@ -103,7 +93,7 @@
      <x>0</x>
      <y>0</y>
      <width>600</width>
-     <height>20</height>
+     <height>22</height>
     </rect>
    </property>
   </widget>
