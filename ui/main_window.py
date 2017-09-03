@@ -1,5 +1,5 @@
 from ui.main_window_ui import Ui_MainWindow
-from automata.dfa import DFA
+from automata.nfa import NFA
 from PyQt5.QtWidgets import (
     QMainWindow, QTableWidgetItem, QInputDialog, QMessageBox)
 
@@ -7,9 +7,9 @@ from PyQt5.QtWidgets import (
 class MainWindow(QMainWindow, Ui_MainWindow):
 
     def __init__(self) -> None:
-        self._dfa = DFA(
+        self._dfa = NFA(
             set(["q0", "q1"]), set(["a", "b"]), "q0", set(["q1"]),
-            {("q0", "a"): "q1", ("q1", "b"): "q0"})
+            {("q0", "a"): {"q1"}, ("q1", "b"): {"q0"}})
 
         QMainWindow.__init__(self)
         self.setupUi(self)
@@ -34,12 +34,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def _update_dfa(self, row: int, col: int) -> None:
         states = self._dfa.states()
         alphabet = self._dfa.alphabet()
-        next_state = self.transitionTable.item(row, col).text()
+        next_states = \
+            set(self.transitionTable.item(row, col).text().split(","))
 
-        if next_state:
+        if next_states != {""}:
             try:
                 self._dfa.set_transition(
-                    states[row], alphabet[col], next_state)
+                    states[row], alphabet[col], next_states)
             except KeyError as error:
                 QMessageBox.information(self, "Error", error.args[0])
                 self.transitionTable.item(row, col).setText("")
@@ -57,7 +58,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         table = self._dfa.transition_table()
         for i, state in enumerate(states):
             for j, symbol in enumerate(alphabet):
-                transition = table[(state, symbol)] \
+                transition = ",".join(table[(state, symbol)]) \
                     if (state, symbol) in table else ""
                 self.transitionTable.setItem(
                     i, j, QTableWidgetItem(transition))
