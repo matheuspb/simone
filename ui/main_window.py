@@ -17,6 +17,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.addSymbolButton.clicked.connect(self._add_symbol)
         self.addStateButton.clicked.connect(self._add_state)
+        self.removeSymbolButton.clicked.connect(self._remove_symbol)
+        self.removeStateButton.clicked.connect(self._remove_state)
 
         self._update_table()
         self.transitionTable.cellChanged.connect(self._update_dfa)
@@ -29,6 +31,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def _add_state(self) -> None:
         text, _ = QInputDialog.getText(self, "Add state", "State:")
         self._dfa.add_state(text)
+        self._update_table()
+
+    def _remove_symbol(self) -> None:
+        text, _ = QInputDialog.getText(self, "Remove symbol", "Symbol:")
+        self._dfa.remove_symbol(text)
+        self._update_table()
+
+    def _remove_state(self) -> None:
+        text, _ = QInputDialog.getText(self, "Remove state", "State:")
+        self._dfa.remove_state(text)
         self._update_table()
 
     def _update_dfa(self, row: int, col: int) -> None:

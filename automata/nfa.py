@@ -27,8 +27,20 @@ class NFA():
     def add_symbol(self, symbol: str) -> None:
         self._alphabet.add(symbol)
 
+    def remove_symbol(self, symbol: str) -> None:
+        try:
+            self._alphabet.remove(symbol)
+        except KeyError:
+            pass
+
     def add_state(self, state: str) -> None:
         self._states.add(state)
+
+    def remove_state(self, state: str) -> None:
+        try:
+            self._states.remove(state)
+        except KeyError:
+            pass
 
     def set_transition(
             self, state: str, symbol: str, next_states: Set[str]) -> None:
