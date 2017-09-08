@@ -28,19 +28,19 @@ class NFA():
         self._alphabet.add(symbol)
 
     def remove_symbol(self, symbol: str) -> None:
-        try:
+        if symbol in self._alphabet:
             self._alphabet.remove(symbol)
-        except KeyError:
-            pass
+        else:
+            raise KeyError("Symbol {} does not exist".format(symbol))
 
     def add_state(self, state: str) -> None:
         self._states.add(state)
 
     def remove_state(self, state: str) -> None:
-        try:
+        if state in self._states:
             self._states.remove(state)
-        except KeyError:
-            pass
+        else:
+            raise KeyError("State {} does not exist".format(state))
 
     def set_transition(
             self, state: str, symbol: str, next_states: Set[str]) -> None:

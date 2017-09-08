@@ -24,24 +24,34 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.transitionTable.cellChanged.connect(self._update_dfa)
 
     def _add_symbol(self) -> None:
-        text, _ = QInputDialog.getText(self, "Add symbol", "Symbol:")
-        self._dfa.add_symbol(text)
-        self._update_table()
+        text, ok = QInputDialog.getText(self, "Add symbol", "Symbol:")
+        if ok:
+            self._dfa.add_symbol(text)
+            self._update_table()
 
     def _add_state(self) -> None:
-        text, _ = QInputDialog.getText(self, "Add state", "State:")
-        self._dfa.add_state(text)
-        self._update_table()
+        text, ok = QInputDialog.getText(self, "Add state", "State:")
+        if ok:
+            self._dfa.add_state(text)
+            self._update_table()
 
     def _remove_symbol(self) -> None:
-        text, _ = QInputDialog.getText(self, "Remove symbol", "Symbol:")
-        self._dfa.remove_symbol(text)
-        self._update_table()
+        text, ok = QInputDialog.getText(self, "Remove symbol", "Symbol:")
+        if ok:
+            try:
+                self._dfa.remove_symbol(text)
+                self._update_table()
+            except KeyError as error:
+                QMessageBox.information(self, "Error", error.args[0])
 
     def _remove_state(self) -> None:
-        text, _ = QInputDialog.getText(self, "Remove state", "State:")
-        self._dfa.remove_state(text)
-        self._update_table()
+        text, ok = QInputDialog.getText(self, "Remove state", "State:")
+        if ok:
+            try:
+                self._dfa.remove_state(text)
+                self._update_table()
+            except KeyError as error:
+                QMessageBox.information(self, "Error", error.args[0])
 
     def _update_dfa(self, row: int, col: int) -> None:
         states = self._dfa.states()
