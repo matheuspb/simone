@@ -20,6 +20,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.removeSymbolButton.clicked.connect(self._remove_symbol)
         self.removeStateButton.clicked.connect(self._remove_state)
         self.finalStateButton.clicked.connect(self._make_state_final)
+        self.testButton.clicked.connect(self._test_string)
 
         self._update_table()
         self.transitionTable.cellChanged.connect(self._update_nfa)
@@ -63,6 +64,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self._update_table()
             except KeyError as error:
                 QMessageBox.information(self, "Error", error.args[0])
+
+    def _test_string(self) -> None:
+        try:
+            self.statusbar.showMessage(
+                "String accepted" if self._nfa.accept(self.inputString.text())
+                else "String rejected")
+        except RuntimeError as error:
+            QMessageBox.information(self, "Error", error.args[0])
 
     def _update_nfa(self, row: int, col: int) -> None:
         states = self._nfa.states()

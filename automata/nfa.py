@@ -61,3 +61,16 @@ class NFA():
         else:
             states = ", ".join(next_states - self._states)
             raise KeyError("State(s) {} do not exist".format(states))
+
+    def accept(self, string: str) -> bool:
+        current_state = self._initial_state
+        for symbol in string:
+            try:
+                next_state = self._transitions[current_state, symbol]
+                if len(next_state) > 1:
+                    raise RuntimeError("Automata is non-deterministic")
+                else:
+                    current_state = next(iter(next_state))
+            except KeyError:
+                return False
+        return current_state in self._final_states
