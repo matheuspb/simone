@@ -7,19 +7,25 @@ class NFA():
 
     def __init__(
             self, states: Set[str], alphabet: Set[str], initial_state: str,
-            accept_states: Set[str],
+            final_states: Set[str],
             transitions: Dict[Tuple[str, str], Set[str]]) -> None:
         self._states = states
-        self._alphabet = alphabet | set(EPSILON)
+        self._alphabet = alphabet  # | set(EPSILON)
         self._transitions = transitions
         self._initial_state = initial_state
-        self._accept_states = accept_states
+        self._final_states = final_states
 
     def transition_table(self) -> Dict[Tuple[str, str], Set[str]]:
         return self._transitions
 
     def states(self) -> List[str]:
         return sorted(self._states)
+
+    def initial_state(self) -> str:
+        return self._initial_state
+
+    def final_states(self) -> Set[str]:
+        return self._final_states
 
     def alphabet(self) -> List[str]:
         return sorted(self._alphabet)
@@ -39,6 +45,12 @@ class NFA():
     def remove_state(self, state: str) -> None:
         if state in self._states:
             self._states.remove(state)
+        else:
+            raise KeyError("State {} does not exist".format(state))
+
+    def make_state_final(self, state: str) -> None:
+        if state in self._states:
+            self._final_states.add(state)
         else:
             raise KeyError("State {} does not exist".format(state))
 
