@@ -83,7 +83,7 @@
           <item>
            <widget class="QPushButton" name="finalStateButton">
             <property name="text">
-             <string>Make state final</string>
+             <string>Toggle final state</string>
             </property>
            </widget>
           </item>

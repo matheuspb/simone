@@ -89,6 +89,6 @@ class Ui_MainWindow(object):
         self.addStateButton.setText(_translate("MainWindow", "Add State"))
         self.removeSymbolButton.setText(_translate("MainWindow", "Remove Symbol"))
         self.removeStateButton.setText(_translate("MainWindow", "Remove State"))
-        self.finalStateButton.setText(_translate("MainWindow", "Make state final"))
+        self.finalStateButton.setText(_translate("MainWindow", "Toggle final state"))
         self.testButton.setText(_translate("MainWindow", "Test string"))
 

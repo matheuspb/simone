@@ -8,8 +8,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def __init__(self) -> None:
         self._nfa = NFA(
-            set(["q0", "q1"]), set(["a", "b"]), "q0", set(["q1"]),
-            {("q0", "a"): {"q1"}, ("q1", "b"): {"q0"}})
+            {"q0", "q1"},
+            {"a", "b"},
+            {("q0", "a"): {"q1"}, ("q1", "b"): {"q0"}},
+            "q0",
+            {"q1"}
+            )
 
         QMainWindow.__init__(self)
         self.setupUi(self)
@@ -19,11 +23,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.addStateButton.clicked.connect(self._add_state)
         self.removeSymbolButton.clicked.connect(self._remove_symbol)
         self.removeStateButton.clicked.connect(self._remove_state)
-        self.finalStateButton.clicked.connect(self._make_state_final)
+        self.finalStateButton.clicked.connect(self._toggle_final_state)
         self.testButton.clicked.connect(self._test_string)
 
-        self._update_table()
         self.transitionTable.cellChanged.connect(self._update_nfa)
+
+        self._update_table()
 
     def _add_symbol(self) -> None:
         text, ok = QInputDialog.getText(self, "Add symbol", "Symbol:")
@@ -40,30 +45,21 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def _remove_symbol(self) -> None:
         text, ok = QInputDialog.getText(self, "Remove symbol", "Symbol:")
         if ok:
-            try:
-                self._nfa.remove_symbol(text)
-                self._update_table()
-            except KeyError as error:
-                QMessageBox.information(self, "Error", error.args[0])
+            self._nfa.remove_symbol(text)
+            self._update_table()
 
     def _remove_state(self) -> None:
         text, ok = QInputDialog.getText(self, "Remove state", "State:")
         if ok:
-            try:
-                self._nfa.remove_state(text)
-                self._update_table()
-            except KeyError as error:
-                QMessageBox.information(self, "Error", error.args[0])
+            self._nfa.remove_state(text)
+            self._update_table()
 
-    def _make_state_final(self) -> None:
+    def _toggle_final_state(self) -> None:
         text, ok = QInputDialog.getText(
-            self, "Final state", "State to be made final")
+            self, "Final state", "State:")
         if ok:
-            try:
-                self._nfa.make_state_final(text)
-                self._update_table()
-            except KeyError as error:
-                QMessageBox.information(self, "Error", error.args[0])
+            self._nfa.toggle_final_state(text)
+            self._update_table()
 
     def _test_string(self) -> None:
         try:

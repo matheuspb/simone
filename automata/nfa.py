@@ -6,9 +6,12 @@ EPSILON = "ε"
 class NFA():
 
     def __init__(
-            self, states: Set[str], alphabet: Set[str], initial_state: str,
-            final_states: Set[str],
-            transitions: Dict[Tuple[str, str], Set[str]]) -> None:
+            self,
+            states: Set[str],
+            alphabet: Set[str],
+            transitions: Dict[Tuple[str, str], Set[str]],
+            initial_state: str,
+            final_states: Set[str]) -> None:
         self._states = states
         self._alphabet = alphabet  # | set(EPSILON)
         self._transitions = transitions
@@ -34,25 +37,30 @@ class NFA():
         self._alphabet.add(symbol)
 
     def remove_symbol(self, symbol: str) -> None:
-        if symbol in self._alphabet:
-            self._alphabet.remove(symbol)
-        else:
-            raise KeyError("Symbol {} does not exist".format(symbol))
+        self._alphabet.discard(symbol)
 
     def add_state(self, state: str) -> None:
         self._states.add(state)
 
     def remove_state(self, state: str) -> None:
-        if state in self._states:
-            self._states.remove(state)
-        else:
-            raise KeyError("State {} does not exist".format(state))
+        # may not remove initial state
+        if state != self._initial_state:
+            self._states.discard(state)
+            self._final_states.discard(state)
+            for transition in self._transitions.values():
+                # remove transitions that go to the removed state
+                transition.discard(state)
+            for symbol in self._alphabet:
+                # remove useless transitions that come from the removed state
+                if (state, symbol) in self._transitions:
+                    del self._transitions[state, symbol]
 
-    def make_state_final(self, state: str) -> None:
+    def toggle_final_state(self, state: str) -> None:
         if state in self._states:
-            self._final_states.add(state)
-        else:
-            raise KeyError("State {} does not exist".format(state))
+            if state in self._final_states:
+                self._final_states.remove(state)
+            else:
+                self._final_states.add(state)
 
     def set_transition(
             self, state: str, symbol: str, next_states: Set[str]) -> None:
@@ -64,13 +72,14 @@ class NFA():
 
     def accept(self, string: str) -> bool:
         current_state = self._initial_state
-        for symbol in string:
-            try:
+        try:
+            for symbol in string:
                 next_state = self._transitions[current_state, symbol]
-                if len(next_state) > 1:
-                    raise RuntimeError("Automata is non-deterministic")
-                else:
+                if len(next_state) == 1:
                     current_state = next(iter(next_state))
-            except KeyError:
-                return False
+                else:
+                    raise RuntimeError("Automata is non-deterministic")
+        except KeyError:
+            # undefined transition
+            return False
         return current_state in self._final_states
