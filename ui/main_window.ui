@@ -14,7 +14,7 @@
    <string>Automata Editor</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QVBoxLayout" name="verticalLayout_2">
+   <layout class="QVBoxLayout" name="verticalLayout_3">
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout_1">
       <item>
@@ -30,16 +30,16 @@
      </layout>
     </item>
     <item>
-     <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <layout class="QVBoxLayout" name="verticalLayout">
       <item>
-       <layout class="QVBoxLayout" name="verticalLayout">
-        <item>
-         <widget class="QLabel" name="FALabel">
-          <property name="text">
-           <string>Automaton transition table</string>
-          </property>
-         </widget>
-        </item>
+       <widget class="QLabel" name="FALabel">
+        <property name="text">
+         <string>Automaton transition table</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
         <item>
          <widget class="QTableWidget" name="transitionTable">
           <property name="rowCount">
@@ -50,6 +50,58 @@
           </property>
          </widget>
         </item>
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayout_2">
+          <item>
+           <widget class="QPushButton" name="addSymbolButton">
+            <property name="text">
+             <string>Add Symbol</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="addStateButton">
+            <property name="text">
+             <string>Add State</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="removeSymbolButton">
+            <property name="text">
+             <string>Remove Symbol</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="removeStateButton">
+            <property name="text">
+             <string>Remove State</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="finalStateButton">
+            <property name="text">
+             <string>Toggle final state</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="verticalSpacer">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </item>
        </layout>
       </item>
      </layout>
@@ -57,43 +109,12 @@
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
-       <spacer name="horizontalSpacer">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
+       <widget class="QLineEdit" name="inputString"/>
       </item>
       <item>
-       <widget class="QPushButton" name="addSymbolButton">
+       <widget class="QPushButton" name="testButton">
         <property name="text">
-         <string>Add Symbol</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="removeSymbolButton">
-        <property name="text">
-         <string>Remove Symbol</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="addStateButton">
-        <property name="text">
-         <string>Add State</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="removeStateButton">
-        <property name="text">
-         <string>Remove State</string>
+         <string>Test string</string>
         </property>
        </widget>
       </item>
@@ -107,7 +128,7 @@
      <x>0</x>
      <y>0</y>
      <width>600</width>
-     <height>26</height>
+     <height>22</height>
     </rect>
    </property>
   </widget>
