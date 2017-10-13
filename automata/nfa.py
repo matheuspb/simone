@@ -1,4 +1,5 @@
 from typing import Dict, List, Tuple, Set
+import json
 
 EPSILON = "ε"
 
@@ -7,16 +8,16 @@ class NFA():
 
     def __init__(
             self,
-            states: Set[str],
-            alphabet: Set[str],
-            transitions: Dict[Tuple[str, str], Set[str]],
-            initial_state: str,
-            final_states: Set[str]) -> None:
-        self._states = states
-        self._alphabet = alphabet  # | set(EPSILON)
-        self._transitions = transitions
+            states: Set[str]=None,
+            alphabet: Set[str]=None,
+            transitions: Dict[Tuple[str, str], Set[str]]=None,
+            initial_state: str="",
+            final_states: Set[str]=None) -> None:
+        self._states = states if states else set()
+        self._alphabet = alphabet if alphabet else set()  # | set(EPSILON)
+        self._transitions = transitions if transitions else {}
         self._initial_state = initial_state
-        self._final_states = final_states
+        self._final_states = final_states if final_states else set()
 
     def transition_table(self) -> Dict[Tuple[str, str], Set[str]]:
         return self._transitions
@@ -40,6 +41,8 @@ class NFA():
         self._alphabet.discard(symbol)
 
     def add_state(self, state: str) -> None:
+        if not self._initial_state:
+            self._initial_state = state
         self._states.add(state)
 
     def remove_state(self, state: str) -> None:
@@ -64,8 +67,11 @@ class NFA():
 
     def set_transition(
             self, state: str, symbol: str, next_states: Set[str]) -> None:
-        if next_states <= self._states:
-            self._transitions[(state, symbol)] = next_states
+        if not next_states:
+            # assert transition won't exist
+            self._transitions.pop((state, symbol), set())
+        elif next_states <= self._states:
+            self._transitions[state, symbol] = next_states
         else:
             states = ", ".join(next_states - self._states)
             raise KeyError("State(s) {} do not exist".format(states))
@@ -78,8 +84,32 @@ class NFA():
                 if len(next_state) == 1:
                     current_state = next(iter(next_state))
                 else:
-                    raise RuntimeError("Automata is non-deterministic")
+                    raise RuntimeError(
+                        "Reached a non-deterministic transition")
         except KeyError:
             # undefined transition
             return False
         return current_state in self._final_states
+
+    def save(self, path: str):
+        data = {}
+        data["states"] = sorted(self._states)
+        data["alphabet"] = sorted(self._alphabet)
+        data["transitions"] = \
+            [(k[0], k[1], sorted(v)) for k, v in self._transitions.items()]
+        data["initial_state"] = self._initial_state
+        data["final_states"] = sorted(self._final_states)
+        with open(path, 'w') as automata_file:
+            json.dump(data, automata_file, indent=4)
+
+    @staticmethod
+    def load(path: str):
+        with open(path, 'r') as automata_file:
+            data = json.load(automata_file)
+        states = set(data["states"])
+        alphabet = set(data["alphabet"])
+        transitions = {(v[0], v[1]): set(v[2]) for v in data["transitions"]}
+        initial_state = data["initial_state"]
+        final_states = data["final_states"]
+        return NFA(
+            states, alphabet, transitions, initial_state, final_states)

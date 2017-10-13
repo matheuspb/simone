@@ -1,21 +1,14 @@
 from ui.main_window_ui import Ui_MainWindow
 from automata.nfa import NFA
 from PyQt5.QtWidgets import (
-    QMainWindow, QTableWidgetItem, QInputDialog, QMessageBox)
+    QMainWindow, QTableWidgetItem, QInputDialog, QMessageBox, QFileDialog)
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
 
     def __init__(self) -> None:
-        self._nfa = NFA(
-            {"q0", "q1"},
-            {"a", "b"},
-            {("q0", "a"): {"q1"}, ("q1", "b"): {"q0"}},
-            "q0",
-            {"q1"}
-            )
-
         QMainWindow.__init__(self)
+
         self.setupUi(self)
         self.setFixedSize(600, 400)
 
@@ -26,8 +19,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.finalStateButton.clicked.connect(self._toggle_final_state)
         self.testButton.clicked.connect(self._test_string)
 
+        self.actionOpen.triggered.connect(self._open)
+        self.actionSave.triggered.connect(self._save)
+
         self.transitionTable.cellChanged.connect(self._update_nfa)
 
+        self._nfa = NFA()
         self._update_table()
 
     def _add_symbol(self) -> None:
@@ -75,13 +72,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         next_states = \
             set(self.transitionTable.item(row, col).text().split(","))
 
-        if next_states != {""}:
-            try:
-                self._nfa.set_transition(
-                    states[row], alphabet[col], next_states)
-            except KeyError as error:
-                QMessageBox.information(self, "Error", error.args[0])
-                self.transitionTable.item(row, col).setText("")
+        try:
+            self._nfa.set_transition(
+                states[row], alphabet[col],
+                next_states if next_states != {""} else set())
+        except KeyError as error:
+            QMessageBox.information(self, "Error", error.args[0])
+            self.transitionTable.item(row, col).setText("")
 
     def _update_table(self) -> None:
         states = []
@@ -108,3 +105,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     if (state, symbol) in table else ""
                 self.transitionTable.setItem(
                     i, j, QTableWidgetItem(transition))
+
+    def _open(self) -> None:
+        path, _ = QFileDialog.getOpenFileName(self)
+        self._nfa = NFA.load(path)
+        self._update_table()
+
+    def _save(self) -> None:
+        path, _ = QFileDialog.getSaveFileName(self)
+        self._nfa.save(path)
