@@ -108,9 +108,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def _open(self) -> None:
         path, _ = QFileDialog.getOpenFileName(self)
-        self._nfa = NFA.load(path)
-        self._update_table()
+        if path:
+            self._nfa = NFA.load(path)
+            self._update_table()
 
     def _save(self) -> None:
         path, _ = QFileDialog.getSaveFileName(self)
-        self._nfa.save(path)
+        if path:
+            self._nfa.save(path)
