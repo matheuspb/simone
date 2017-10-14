@@ -39,6 +39,10 @@ class NFA():
 
     def remove_symbol(self, symbol: str) -> None:
         self._alphabet.discard(symbol)
+        for state in self._states:
+            # remove transitions by the removed symbol
+            if (state, symbol) in self._transitions:
+                del self._transitions[state, symbol]
 
     def add_state(self, state: str) -> None:
         if not self._initial_state:
