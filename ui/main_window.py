@@ -19,13 +19,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.finalStateButton.clicked.connect(self._toggle_final_state)
         self.testButton.clicked.connect(self._test_string)
 
+        self.actionNew.triggered.connect(self._new)
         self.actionOpen.triggered.connect(self._open)
         self.actionSave.triggered.connect(self._save)
 
         self.transitionTable.cellChanged.connect(self._update_nfa)
 
-        self._nfa = NFA()
-        self._update_table()
+        self._new()
 
     def _add_symbol(self) -> None:
         text, ok = QInputDialog.getText(self, "Add symbol", "Symbol:")
@@ -105,6 +105,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     if (state, symbol) in table else ""
                 self.transitionTable.setItem(
                     i, j, QTableWidgetItem(transition))
+
+    def _new(self) -> None:
+        self._nfa = NFA()
+        self._update_table()
 
     def _open(self) -> None:
         path, _ = QFileDialog.getOpenFileName(self)
