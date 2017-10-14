@@ -110,6 +110,6 @@ class NFA():
         alphabet = set(data["alphabet"])
         transitions = {(v[0], v[1]): set(v[2]) for v in data["transitions"]}
         initial_state = data["initial_state"]
-        final_states = data["final_states"]
+        final_states = set(data["final_states"])
         return NFA(
             states, alphabet, transitions, initial_state, final_states)
