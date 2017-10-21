@@ -1,8 +1,6 @@
 from typing import Dict, List, Tuple, Set
 import json
 
-EPSILON = "ε"
-
 
 class NFA():
 
@@ -14,7 +12,7 @@ class NFA():
             initial_state: str="",
             final_states: Set[str]=None) -> None:
         self._states = states if states else set()
-        self._alphabet = alphabet if alphabet else set()  # | set(EPSILON)
+        self._alphabet = alphabet if alphabet else set()
         self._transitions = transitions if transitions else {}
         self._initial_state = initial_state
         self._final_states = final_states if final_states else set()
@@ -23,7 +21,8 @@ class NFA():
         return self._transitions
 
     def states(self) -> List[str]:
-        return sorted(self._states)
+        return [self._initial_state] + \
+            sorted(self._states - {self._initial_state})
 
     def initial_state(self) -> str:
         return self._initial_state

@@ -1,5 +1,7 @@
+from typing import Set
 from ui.main_window_ui import Ui_MainWindow
 from tools.nfa import NFA
+from tools.grammar import RegularGrammar
 from PyQt5.QtWidgets import (
     QMainWindow, QTableWidgetItem, QInputDialog, QMessageBox, QFileDialog)
 
@@ -17,6 +19,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.removeSymbolButton.clicked.connect(self._remove_symbol)
         self.removeStateButton.clicked.connect(self._remove_state)
         self.finalStateButton.clicked.connect(self._toggle_final_state)
+
+        self.fromNFAbutton.clicked.connect(self._nfa_to_grammar)
+
         self.testButton.clicked.connect(self._test_string)
 
         self.actionNew.triggered.connect(self._new)
@@ -66,6 +71,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         except RuntimeError as error:
             QMessageBox.information(self, "Error", error.args[0])
 
+    def _nfa_to_grammar(self) -> None:
+        self._grammar = RegularGrammar.fromNFA(self._nfa)
+        self._update_grammar_text()
+
     def _update_nfa(self, row: int, col: int) -> None:
         states = self._nfa.states()
         alphabet = self._nfa.alphabet()
@@ -106,8 +115,33 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.transitionTable.setItem(
                     i, j, QTableWidgetItem(transition))
 
+    def _update_grammar_text(self) -> None:
+        """
+        "B", {"aB", "bC", "a"} turns into
+        "B -> aB | bC | a"
+        """
+        def transform_production(non_terminal: str, productions: Set[str]):
+            return "{} -> {}".format(
+                non_terminal, " | ".join(sorted(productions)))
+
+        initial_symbol = self._grammar.initial_symbol()
+        productions = self._grammar.productions()
+
+        text = ""
+
+        if initial_symbol in productions:
+            text = transform_production(
+                initial_symbol, productions[initial_symbol]) + "\n"
+
+        for non_terminal in sorted(set(productions.keys()) - {initial_symbol}):
+            text += transform_production(
+                non_terminal, productions[non_terminal]) + "\n"
+
+        self.grammarText.setPlainText(text)
+
     def _new(self) -> None:
         self._nfa = NFA()
+        self._grammar = RegularGrammar()
         self._update_table()
 
     def _open(self) -> None:

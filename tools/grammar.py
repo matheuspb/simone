@@ -6,7 +6,7 @@ class RegularGrammar():
 
     def __init__(
             self, initial_symbol: str="",
-            productions: Dict[str, Set[str]]=None):
+            productions: Dict[str, Set[str]]=None) -> None:
         self._initial_symbol = initial_symbol
         self._productions = productions if productions else {}
 
@@ -29,6 +29,7 @@ class RegularGrammar():
                     grammar._productions[k[0]].add(k[1])
         if nfa.initial_state() in nfa.final_states():
             grammar._productions[grammar._initial_symbol + "'"] = \
-                grammar._productions[grammar._initial_symbol] | {"&"}
+                grammar._productions.get(grammar._initial_symbol, set()) | \
+                {"&"}
             grammar._initial_symbol = grammar._initial_symbol + "'"
         return grammar
