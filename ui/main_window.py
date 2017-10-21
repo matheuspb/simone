@@ -1,5 +1,5 @@
 from ui.main_window_ui import Ui_MainWindow
-from automata.nfa import NFA
+from tools.nfa import NFA
 from PyQt5.QtWidgets import (
     QMainWindow, QTableWidgetItem, QInputDialog, QMessageBox, QFileDialog)
 

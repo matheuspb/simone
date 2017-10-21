@@ -1,6 +1,7 @@
 import unittest
 from typing import Set
-from automata.nfa import NFA
+from tools.nfa import NFA
+from tools.grammar import RegularGrammar
 
 
 class TestNFA(unittest.TestCase):
@@ -23,6 +24,21 @@ class TestNFA(unittest.TestCase):
         nfa = NFA.load("examples/endsWbb.json")
         with self.assertRaises(RuntimeError):
             nfa.accept("aaaabb")
+
+
+class testRG(unittest.TestCase):
+
+    def test_nfa_to_rg_conversion(self):
+        grammar = RegularGrammar.fromNFA(NFA.load("examples/div3.json"))
+        self.assertTrue(grammar.initial_symbol() == "S'")
+        self.assertTrue(
+            grammar.productions() ==
+            {
+                "S'": {"0S", "1A", "0", "&"},
+                "S":  {"0S", "1A", "0"},
+                "A":  {"0B", "1S", "1"},
+                "B":  {"0A", "1B"}
+            })
 
 if __name__ == "__main__":
     unittest.main()
