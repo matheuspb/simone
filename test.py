@@ -40,5 +40,14 @@ class testRG(unittest.TestCase):
                 "B":  {"0A", "1B"}
             })
 
+        grammar = RegularGrammar.fromNFA(NFA.load("examples/endsWbb.json"))
+        self.assertTrue(grammar.initial_symbol() == "S")
+        self.assertTrue(
+            grammar.productions() ==
+            {
+                "S": {"aS", "bS", "bA"},
+                "A": {"b", "bB"}
+            })
+
 if __name__ == "__main__":
     unittest.main()
