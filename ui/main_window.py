@@ -18,6 +18,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.removeStateButton.clicked.connect(self._remove_state)
         self.finalStateButton.clicked.connect(self._toggle_final_state)
         self.testButton.clicked.connect(self._test_string)
+        self.determinizationButton.clicked.connect(self._convert_to_dfa)
 
         self.actionNew.triggered.connect(self._new)
         self.actionOpen.triggered.connect(self._open)
@@ -65,6 +66,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 else "String rejected")
         except RuntimeError as error:
             QMessageBox.information(self, "Error", error.args[0])
+
+    def _convert_to_dfa(self) -> None:
+        self._nfa.determinize()
 
     def _update_nfa(self, row: int, col: int) -> None:
         states = self._nfa.states()
