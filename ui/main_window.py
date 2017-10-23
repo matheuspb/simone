@@ -1,3 +1,4 @@
+import re
 from ui.main_window_ui import Ui_MainWindow
 from automata.nfa import NFA
 from PyQt5.QtWidgets import (
@@ -69,12 +70,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def _convert_to_dfa(self) -> None:
         self._nfa.determinize()
+        self._update_table()
 
     def _update_nfa(self, row: int, col: int) -> None:
         states = self._nfa.states()
         alphabet = self._nfa.alphabet()
         next_states = \
-            set(self.transitionTable.item(row, col).text().split(","))
+            set(re.split(r"\W+", self.transitionTable.item(row, col).text()))
 
         try:
             self._nfa.set_transition(

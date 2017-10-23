@@ -1,7 +1,7 @@
 from typing import Dict, List, Tuple, Set
 import json
 
-EPSILON = "ε"
+EPSILON = "&"
 
 
 class NFA():
@@ -94,6 +94,32 @@ class NFA():
             # undefined transition
             return False
         return current_state in self._final_states
+
+    def determinize(self) -> bool:
+        """
+            TODO: Still doesn't generate all the new states at a single 
+            iteration.
+        """
+        old_transitions = self._transitions.copy()
+
+        for actual, next_state in old_transitions.items():
+            new_state_name = ", ".join(str(s) for s in sorted(next_state))
+
+            # Include new states
+            if (new_state_name not in self._states):
+                self.add_state(new_state_name)
+                # Find the transitions of the new state
+                for symbol in self._alphabet:
+                    new_state_transition = set()
+                    for derived in next_state:
+                        if (derived, symbol) in self._transitions:
+                            new_state_transition.update(
+                                    str(s) for s in 
+                                    self._transitions[(derived, symbol)])
+
+                    self.set_transition(new_state_name,
+                                        symbol,
+                                        new_state_transition)
 
     def save(self, path: str):
         data = {}
