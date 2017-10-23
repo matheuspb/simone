@@ -94,6 +94,32 @@ class NFA():
             return False
         return current_state in self._final_states
 
+    # TODO unit tests
+    @staticmethod
+    def fromRegularGrammar(grammar):
+        initial_symbol = grammar.initial_symbol()
+        productions = grammar.productions()
+
+        states = set(productions.keys()) | {"X"}
+        alphabet = set()
+        transitions = {}
+        initial_state = initial_symbol
+        final_states = set("X") | \
+            ({initial_symbol} if "&" in productions[initial_symbol] else set())
+
+        for non_terminal, prods in productions.items():
+            for production in prods:
+                if production == "&":
+                    continue
+
+                new_transition = "X" if len(production) == 1 else production[1]
+                transitions.setdefault(
+                    (non_terminal, production[0]), set()).add(new_transition)
+
+                alphabet.add(production[0])
+
+        return NFA(states, alphabet, transitions, initial_state, final_states)
+
     def save(self, path: str):
         data = {}
         data["states"] = sorted(self._states)

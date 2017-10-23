@@ -4,6 +4,9 @@ from tools.nfa import NFA
 from tools.grammar import RegularGrammar
 from PyQt5.QtWidgets import (
     QMainWindow, QTableWidgetItem, QInputDialog, QMessageBox, QFileDialog)
+import re
+
+GRAMMAR_PATTERN = re.compile(r"^[A-Z]'?->[a-z&][A-Z]?(\|[a-z&][A-Z]?)*$")
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -21,6 +24,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.finalStateButton.clicked.connect(self._toggle_final_state)
 
         self.fromNFAbutton.clicked.connect(self._nfa_to_grammar)
+        self.toNFAbutton.clicked.connect(self._grammar_to_nfa)
 
         self.testButton.clicked.connect(self._test_string)
 
@@ -74,6 +78,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def _nfa_to_grammar(self) -> None:
         self._grammar = RegularGrammar.fromNFA(self._nfa)
         self._update_grammar_text()
+
+    def _grammar_to_nfa(self) -> None:
+        try:
+            self._nfa = NFA.fromRegularGrammar(
+                parse_grammar_text(self.grammarText.toPlainText()))
+            self._update_table()
+        except RuntimeError as error:
+            QMessageBox.information(self, "Error", error.args[0])
 
     def _update_nfa(self, row: int, col: int) -> None:
         states = self._nfa.states()
@@ -154,3 +166,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         path, _ = QFileDialog.getSaveFileName(self)
         if path:
             self._nfa.save(path)
+
+
+def parse_grammar_text(grammar: str) -> RegularGrammar:
+    grammar = grammar.strip().replace(" ", "")
+    lines = grammar.split("\n")
+
+    if not all(map(GRAMMAR_PATTERN.match, lines)):
+        raise RuntimeError("Grammar is not regular")
+
+    initial_symbol, prods = lines[0].split("->")
+    productions = {initial_symbol: set(prods.split("|"))}
+    for line in lines[1:]:
+        non_terminal, prods = line.split("->")
+        productions[non_terminal] = set(prods.split("|"))
+
+    return RegularGrammar(initial_symbol, productions)
