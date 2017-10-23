@@ -34,7 +34,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.transitionTable.cellChanged.connect(self._update_nfa)
 
-        self._new()
+        self._grammar = RegularGrammar()
+        self._nfa = NFA()
+        self._update_table()
 
     def _add_symbol(self) -> None:
         text, ok = QInputDialog.getText(self, "Add symbol", "Symbol:")
