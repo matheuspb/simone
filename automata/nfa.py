@@ -81,19 +81,21 @@ class NFA():
             raise KeyError("State(s) {} do not exist".format(states))
 
     def accept(self, string: str) -> bool:
-        current_state = self._initial_state
-        try:
-            for symbol in string:
-                next_state = self._transitions[current_state, symbol]
-                if len(next_state) == 1:
-                    current_state = next(iter(next_state))
-                else:
-                    raise RuntimeError(
-                        "Reached a non-deterministic transition")
-        except KeyError:
-            # undefined transition
-            return False
-        return current_state in self._final_states
+        """
+            Checks if a given string is member of the language recognized by
+            the NFA. Using non-deterministic transitions.
+        """
+        current_state = set([self._initial_state])
+
+        for symbol in string:
+            next_state = set()
+            for state in current_state:
+                next_state.update(self._transitions.setdefault((state, symbol),
+                                                                set())
+                                 )
+            current_state = next_state
+
+        return bool(current_state.intersection(self._final_states))
 
     def determinize(self) -> None:
         """
