@@ -1,4 +1,4 @@
-from typing import Dict, List, Tuple, Set
+from typing import Dict, List, Tuple, Set, Any
 import json
 
 
@@ -96,7 +96,7 @@ class NFA():
 
     # TODO unit tests
     @staticmethod
-    def fromRegularGrammar(grammar):
+    def from_regular_grammar(grammar):
         initial_symbol = grammar.initial_symbol()
         productions = grammar.productions()
 
@@ -121,7 +121,7 @@ class NFA():
         return NFA(states, alphabet, transitions, initial_state, final_states)
 
     def save(self, path: str):
-        data = {}
+        data = {}  # type: Dict[str, Any]
         data["states"] = sorted(self._states)
         data["alphabet"] = sorted(self._alphabet)
         data["transitions"] = \

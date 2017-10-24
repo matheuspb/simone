@@ -6,8 +6,9 @@ from tools.grammar import RegularGrammar
 
 class TestNFA(unittest.TestCase):
 
-    def test_accept(self):
-        def test(nfa: NFA, true_cases: Set[str], false_cases: Set[str]):
+    def test_accept(self) -> None:
+        def test(nfa: NFA, true_cases: Set[str], false_cases: Set[str]) \
+                -> None:
             self.assertTrue(all(nfa.accept(s) for s in true_cases))
             self.assertFalse(any(nfa.accept(s) for s in false_cases))
 
@@ -28,8 +29,8 @@ class TestNFA(unittest.TestCase):
 
 class testRG(unittest.TestCase):
 
-    def test_nfa_to_rg_conversion(self):
-        grammar = RegularGrammar.fromNFA(NFA.load("examples/div3.json"))
+    def test_nfa_to_rg_conversion(self) -> None:
+        grammar = RegularGrammar.from_nfa(NFA.load("examples/div3.json"))
         self.assertTrue(grammar.initial_symbol() == "S'")
         self.assertTrue(
             grammar.productions() ==
@@ -40,7 +41,7 @@ class testRG(unittest.TestCase):
                 "B":  {"0A", "1B"}
             })
 
-        grammar = RegularGrammar.fromNFA(NFA.load("examples/endsWbb.json"))
+        grammar = RegularGrammar.from_nfa(NFA.load("examples/endsWbb.json"))
         self.assertTrue(grammar.initial_symbol() == "S")
         self.assertTrue(
             grammar.productions() ==

@@ -34,12 +34,12 @@ class RegularGrammar():
         return self._productions
 
     @staticmethod
-    def fromNFA(nfa: NFA):
+    def from_nfa(nfa: NFA):
         """
         Returns a regular grammar that generates the language of the given NFA
         """
         initial_symbol = nfa.initial_state()
-        productions = {}
+        productions = {}  # type: Dict[str, Set[str]]
 
         # if delta(A, a) = B, then add the production A -> aB to the grammar
         # if B is a final state of the NFA then also add A -> a

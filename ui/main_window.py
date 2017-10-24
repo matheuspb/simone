@@ -1,10 +1,10 @@
 from typing import Set
+import re
 from ui.main_window_ui import Ui_MainWindow
 from tools.nfa import NFA
 from tools.grammar import RegularGrammar
 from PyQt5.QtWidgets import (
     QMainWindow, QTableWidgetItem, QInputDialog, QMessageBox, QFileDialog)
-import re
 
 GRAMMAR_PATTERN = re.compile(r"^[A-Z]'?->[a-z&][A-Z]?(\|[a-z&][A-Z]?)*$")
 
@@ -78,12 +78,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             QMessageBox.information(self, "Error", error.args[0])
 
     def _nfa_to_grammar(self) -> None:
-        self._grammar = RegularGrammar.fromNFA(self._nfa)
+        self._grammar = RegularGrammar.from_nfa(self._nfa)
         self._update_grammar_text()
 
     def _grammar_to_nfa(self) -> None:
         try:
-            self._nfa = NFA.fromRegularGrammar(
+            self._nfa = NFA.from_regular_grammar(
                 parse_grammar_text(self.grammarText.toPlainText()))
             self._update_table()
         except RuntimeError as error:
