@@ -21,8 +21,9 @@ class TestNFA(unittest.TestCase):
         test(nfa, true_cases, false_cases)
 
         nfa = NFA.load("examples/endsWbb.json")
-        with self.assertRaises(RuntimeError):
-            nfa.accept("aaaabb")
+        true_cases = {"bb", "abaabbabaabb", "babb", "abbabbabb"}
+        false_cases = {"", "abba", "bbbbbba", "bbbaaabba"}
+        test(nfa, true_cases, false_cases)
 
 if __name__ == "__main__":
     unittest.main()
