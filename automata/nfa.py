@@ -95,10 +95,10 @@ class NFA():
             return False
         return current_state in self._final_states
 
-    def determinize(self) -> bool:
+    def determinize(self) -> None:
         """
-            TODO: Still doesn't generate all the new states at a single 
-            iteration.
+            Given the actual NFA, determinizes it, appending the new
+            transitions and states to the actual ones of the NFA.
         """
         old_transitions = self._transitions.copy()
 
@@ -111,15 +111,16 @@ class NFA():
                 # Find the transitions of the new state
                 for symbol in self._alphabet:
                     new_state_transition = set()
-                    for derived in next_state:
-                        if (derived, symbol) in self._transitions:
+                    for compose in next_state:
+                        if (compose, symbol) in self._transitions:
                             new_state_transition.update(
                                     str(s) for s in 
-                                    self._transitions[(derived, symbol)])
+                                    self._transitions[(compose, symbol)])
 
                     self.set_transition(new_state_name,
                                         symbol,
                                         new_state_transition)
+                self.determinize()
 
     def save(self, path: str):
         data = {}
