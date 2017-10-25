@@ -32,6 +32,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionOpen.triggered.connect(self._open)
         self.actionSave.triggered.connect(self._save)
 
+        self.actionRemove_unreachable_states.triggered.connect(
+            self._remove_unreachable)
+
         self.transitionTable.cellChanged.connect(self._update_nfa)
 
         self._grammar = RegularGrammar()
@@ -68,6 +71,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if ok:
             self._nfa.toggle_final_state(text)
             self._update_table()
+
+    def _remove_unreachable(self) -> None:
+        self._nfa.remove_unreachable()
+        self._update_table()
 
     def _test_string(self) -> None:
         try:

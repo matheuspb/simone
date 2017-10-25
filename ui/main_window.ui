@@ -194,7 +194,16 @@
     <addaction name="actionOpen"/>
     <addaction name="actionSave"/>
    </widget>
+   <widget class="QMenu" name="menuMinimize">
+    <property name="title">
+     <string>Transformations</string>
+    </property>
+    <addaction name="actionRemove_unreachable_states"/>
+    <addaction name="actionRemove_dead_states"/>
+    <addaction name="actionMerge_equivalent_states"/>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuMinimize"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionOpen">
@@ -219,6 +228,21 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+N</string>
+   </property>
+  </action>
+  <action name="actionRemove_unreachable_states">
+   <property name="text">
+    <string>Remove unreachable states</string>
+   </property>
+  </action>
+  <action name="actionRemove_dead_states">
+   <property name="text">
+    <string>Remove dead states</string>
+   </property>
+  </action>
+  <action name="actionMerge_equivalent_states">
+   <property name="text">
+    <string>Merge equivalent states</string>
    </property>
   </action>
  </widget>

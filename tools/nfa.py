@@ -79,6 +79,22 @@ class NFA():
             states = ", ".join(next_states - self._states)
             raise KeyError("State(s) {} do not exist".format(states))
 
+    def remove_unreachable(self) -> None:
+        reachable = set()  # type: Set[str]
+        new_reachable = set(self._initial_state)
+        while reachable != new_reachable:
+            reachable |= new_reachable
+            n = new_reachable.copy()
+            new_reachable = set()
+            for state in n:
+                for symbol in self._alphabet:
+                    new_reachable.update(
+                        self._transitions.get((state, symbol), set()))
+
+        unreachable_states = self._states - reachable
+        for unreachable_state in unreachable_states:
+            self.remove_state(unreachable_state)
+
     def accept(self, string: str) -> bool:
         current_state = self._initial_state
         try:
