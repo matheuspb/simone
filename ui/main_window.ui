@@ -30,84 +30,139 @@
      </layout>
     </item>
     <item>
-     <layout class="QVBoxLayout" name="verticalLayout">
-      <item>
-       <widget class="QLabel" name="FALabel">
-        <property name="text">
-         <string>Automaton transition table</string>
-        </property>
-       </widget>
-      </item>
+     <layout class="QVBoxLayout" name="verticalLayout_1">
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_2">
         <item>
-         <widget class="QTableWidget" name="transitionTable">
-          <property name="rowCount">
+         <widget class="QTabWidget" name="tabWidget">
+          <property name="currentIndex">
            <number>0</number>
           </property>
-          <property name="columnCount">
-           <number>0</number>
-          </property>
+          <widget class="QWidget" name="automatonTab">
+           <attribute name="title">
+            <string>Automaton</string>
+           </attribute>
+           <layout class="QGridLayout" name="gridLayout">
+            <item row="0" column="0">
+             <widget class="QTableWidget" name="transitionTable">
+              <property name="rowCount">
+               <number>0</number>
+              </property>
+              <property name="columnCount">
+               <number>0</number>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <layout class="QVBoxLayout" name="verticalLayout_2">
+              <item>
+               <widget class="QPushButton" name="addSymbolButton">
+                <property name="text">
+                 <string>Add Symbol</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="addStateButton">
+                <property name="text">
+                 <string>Add State</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="removeSymbolButton">
+                <property name="text">
+                 <string>Remove Symbol</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="removeStateButton">
+                <property name="text">
+                 <string>Remove State</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="finalStateButton">
+                <property name="text">
+                 <string>Toggle final state</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="determinizationButton">
+                <property name="text">
+                 <string>Determinize</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="verticalSpacer">
+                <property name="orientation">
+                 <enum>Qt::Vertical</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>20</width>
+                  <height>40</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="grammarTab">
+           <attribute name="title">
+            <string>Grammar</string>
+           </attribute>
+           <layout class="QGridLayout" name="gridLayout_2">
+            <item row="0" column="0">
+             <widget class="QPlainTextEdit" name="grammarText">
+              <property name="font">
+               <font>
+                <family>Monospace</family>
+                <pointsize>10</pointsize>
+               </font>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <layout class="QVBoxLayout" name="verticalLayout_6">
+              <item>
+               <widget class="QPushButton" name="fromNFAbutton">
+                <property name="text">
+                 <string>Convert from NFA</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="toNFAbutton">
+                <property name="text">
+                 <string>Convert to NFA</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="verticalSpacer_2">
+                <property name="orientation">
+                 <enum>Qt::Vertical</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>20</width>
+                  <height>40</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </widget>
          </widget>
-        </item>
-        <item>
-         <layout class="QVBoxLayout" name="verticalLayout_2">
-          <item>
-           <widget class="QPushButton" name="addSymbolButton">
-            <property name="text">
-             <string>Add Symbol</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="addStateButton">
-            <property name="text">
-             <string>Add State</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="removeSymbolButton">
-            <property name="text">
-             <string>Remove Symbol</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="removeStateButton">
-            <property name="text">
-             <string>Remove State</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="finalStateButton">
-            <property name="text">
-             <string>Toggle final state</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="determinizationButton">
-            <property name="text">
-             <string>Convert to DFA</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <spacer name="verticalSpacer">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>40</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-         </layout>
         </item>
        </layout>
       </item>

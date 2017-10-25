@@ -1,7 +1,5 @@
-from typing import Dict, List, Tuple, Set
+from typing import Dict, List, Tuple, Set, Any
 import json
-
-EPSILON = "&"
 
 
 class NFA():
@@ -14,7 +12,7 @@ class NFA():
             initial_state: str="",
             final_states: Set[str]=None) -> None:
         self._states = states if states else set()
-        self._alphabet = alphabet if alphabet else set()  # | set(EPSILON)
+        self._alphabet = alphabet if alphabet else set()
         self._transitions = transitions if transitions else {}
         self._initial_state = initial_state
         self._final_states = final_states if final_states else set()
@@ -23,7 +21,8 @@ class NFA():
         return self._transitions
 
     def states(self) -> List[str]:
-        return sorted(self._states)
+        return [self._initial_state] + \
+            sorted(self._states - {self._initial_state})
 
     def initial_state(self) -> str:
         return self._initial_state
@@ -135,8 +134,34 @@ class NFA():
         for actual, next_state in original_transitions.items():
             self._determinizate_state(actual, next_state)
 
+    # TODO unit tests
+    @staticmethod
+    def from_regular_grammar(grammar):
+        initial_symbol = grammar.initial_symbol()
+        productions = grammar.productions()
+
+        states = set(productions.keys()) | {"X"}
+        alphabet = set()
+        transitions = {}
+        initial_state = initial_symbol
+        final_states = set("X") | \
+            ({initial_symbol} if "&" in productions[initial_symbol] else set())
+
+        for non_terminal, prods in productions.items():
+            for production in prods:
+                if production == "&":
+                    continue
+
+                new_transition = "X" if len(production) == 1 else production[1]
+                transitions.setdefault(
+                    (non_terminal, production[0]), set()).add(new_transition)
+
+                alphabet.add(production[0])
+
+        return NFA(states, alphabet, transitions, initial_state, final_states)
+
     def save(self, path: str):
-        data = {}
+        data = {}  # type: Dict[str, Any]
         data["states"] = sorted(self._states)
         data["alphabet"] = sorted(self._alphabet)
         data["transitions"] = \
