@@ -35,6 +35,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionRemove_unreachable_states.triggered.connect(
             self._remove_unreachable)
         self.actionRemove_dead_states.triggered.connect(self._remove_dead)
+        self.actionMerge_equivalent_states.triggered.connect(
+            self._merge_equivalent)
 
         self.transitionTable.cellChanged.connect(self._update_nfa)
 
@@ -79,6 +81,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def _remove_dead(self) -> None:
         self._nfa.remove_dead()
+        self._update_table()
+
+    def _merge_equivalent(self) -> None:
+        self._nfa.merge_equivalent()
         self._update_table()
 
     def _test_string(self) -> None:

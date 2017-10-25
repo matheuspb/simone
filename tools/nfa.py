@@ -1,4 +1,5 @@
-from typing import Dict, List, Tuple, Set, Any
+from typing import Dict, List, Tuple, Set, Any, FrozenSet
+from itertools import combinations
 import json
 
 
@@ -111,7 +112,8 @@ class NFA():
 
         The visited set is used just to avoid an infinite recursion.
     """
-    def _is_alive(self, state: str, alive: Set[str], visited: Set[str]):
+    def _is_alive(
+            self, state: str, alive: Set[str], visited: Set[str]) -> bool:
         if state not in visited:
             visited.add(state)
             reachable_states = set()  # type: Set[str]
@@ -122,6 +124,62 @@ class NFA():
                 if self._is_alive(reachable_state, alive, visited):
                     alive.add(state)
         return state in alive
+
+    def merge_equivalent(self) -> None:
+        undistinguishable = set()  # pairs of undistinguishable states
+
+        # initially, you can't distinguish final and non-final states
+        for pair in combinations(self._states - self._final_states, 2):
+            undistinguishable.add(frozenset(pair))
+        for pair in combinations(self._final_states, 2):
+            undistinguishable.add(frozenset(pair))
+
+        # find new distinguishable states
+        while True:
+            undistinguishable_copy = undistinguishable.copy()
+            for state_a, state_b in undistinguishable_copy:
+                if not self._are_undistinguishable(
+                        state_a, state_b, undistinguishable_copy):
+                    undistinguishable.remove(frozenset((state_a, state_b)))
+            if undistinguishable == undistinguishable_copy:
+                # no new distinguishable states were found
+                break
+
+        for state_a, state_b in undistinguishable:
+            self._merge_states(state_a, state_b)
+
+    """
+        State a and b are distinguishable if they go to distinguishable states
+        for some input symbol.
+    """
+    def _are_undistinguishable(
+            self, state_a: str, state_b: str,
+            undistinguishable: Set[FrozenSet[str]]) -> bool:
+        for symbol in self._alphabet:
+            transition_a = \
+                list(self._transitions.get((state_a, symbol), " "))[0]
+            transition_b = \
+                list(self._transitions.get((state_b, symbol), " "))[0]
+            if transition_a != transition_b and \
+                    frozenset((transition_a, transition_b)) not in \
+                    undistinguishable:
+                return False
+        return True
+
+    """ Merges state b into a, making them one state """
+    def _merge_states(self, state_a: str, state_b: str):
+        state_to_be_removed = state_b
+        state_to_be_kept = state_a
+        # avoid removing the initial state or one that's already removed
+        if state_to_be_removed == self._initial_state or \
+                state_to_be_kept not in self._states:
+            state_to_be_removed = state_a
+            state_to_be_kept = state_b
+
+        for actual_state, next_state in self._transitions.items():
+            if next_state == {state_to_be_removed}:
+                self._transitions[actual_state] = {state_to_be_kept}
+        self.remove_state(state_to_be_removed)
 
     def accept(self, string: str) -> bool:
         current_state = self._initial_state
