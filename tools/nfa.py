@@ -79,6 +79,7 @@ class NFA():
             states = ", ".join(next_states - self._states)
             raise KeyError("State(s) {} do not exist".format(states))
 
+    """ Removes the states that the automaton will never be in """
     def remove_unreachable(self) -> None:
         reachable = set()  # type: Set[str]
         new_reachable = {self._initial_state}
@@ -95,21 +96,30 @@ class NFA():
         for unreachable_state in unreachable_states:
             self.remove_state(unreachable_state)
 
+    """ Removes states that never reach a final state """
     def remove_dead(self) -> None:
-        dead_states = set(s for s in self._states if
-            not self._is_alive(s, self._final_states.copy(), set()))
-        for dead_state in dead_states:
+        # assumes all unreachable states were removed
+        alive_states = self._final_states.copy()
+        self._is_alive(self._initial_state, alive_states, set())
+        for dead_state in self._states - alive_states:
             self.remove_state(dead_state)
 
-    def _is_alive(self, state, alive, visited):
+    """
+        Uses the recursive definition of alive state, that is, if you can reach
+        an alive state from the state, it is alive. The initial set of alive
+        states are the final states.
+
+        The visited set is used just to avoid an infinite recursion.
+    """
+    def _is_alive(self, state: str, alive: Set[str], visited: Set[str]):
         if state not in visited:
             visited.add(state)
             reachable_states = set()  # type: Set[str]
             for symbol in self._alphabet:
                 reachable_states.update(
                     self._transitions.get((state, symbol), set()))
-            for s in reachable_states:
-                if self._is_alive(s, alive, visited):
+            for reachable_state in reachable_states:
+                if self._is_alive(reachable_state, alive, visited):
                     alive.add(state)
         return state in alive
 
