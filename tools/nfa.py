@@ -81,8 +81,8 @@ class NFA():
 
     def remove_unreachable(self) -> None:
         reachable = set()  # type: Set[str]
-        new_reachable = set(self._initial_state)
-        while reachable != new_reachable:
+        new_reachable = {self._initial_state}
+        while not new_reachable <= reachable:
             reachable |= new_reachable
             n = new_reachable.copy()
             new_reachable = set()
@@ -94,6 +94,24 @@ class NFA():
         unreachable_states = self._states - reachable
         for unreachable_state in unreachable_states:
             self.remove_state(unreachable_state)
+
+    def remove_dead(self) -> None:
+        dead_states = set(s for s in self._states if
+            not self._is_alive(s, self._final_states.copy(), set()))
+        for dead_state in dead_states:
+            self.remove_state(dead_state)
+
+    def _is_alive(self, state, alive, visited):
+        if state not in visited:
+            visited.add(state)
+            reachable_states = set()  # type: Set[str]
+            for symbol in self._alphabet:
+                reachable_states.update(
+                    self._transitions.get((state, symbol), set()))
+            for s in reachable_states:
+                if self._is_alive(s, alive, visited):
+                    alive.add(state)
+        return state in alive
 
     def accept(self, string: str) -> bool:
         current_state = self._initial_state

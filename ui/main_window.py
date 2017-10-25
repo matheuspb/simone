@@ -34,6 +34,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.actionRemove_unreachable_states.triggered.connect(
             self._remove_unreachable)
+        self.actionRemove_dead_states.triggered.connect(self._remove_dead)
 
         self.transitionTable.cellChanged.connect(self._update_nfa)
 
@@ -74,6 +75,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def _remove_unreachable(self) -> None:
         self._nfa.remove_unreachable()
+        self._update_table()
+
+    def _remove_dead(self) -> None:
+        self._nfa.remove_dead()
         self._update_table()
 
     def _test_string(self) -> None:
