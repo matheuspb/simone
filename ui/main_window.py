@@ -1,7 +1,12 @@
+from typing import Set
+import re
 from ui.main_window_ui import Ui_MainWindow
-from automata.nfa import NFA
+from tools.nfa import NFA
+from tools.grammar import RegularGrammar
 from PyQt5.QtWidgets import (
     QMainWindow, QTableWidgetItem, QInputDialog, QMessageBox, QFileDialog)
+
+GRAMMAR_PATTERN = re.compile(r"^[A-Z]'?->[a-z&][A-Z]?(\|[a-z&][A-Z]?)*$")
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -17,6 +22,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.removeSymbolButton.clicked.connect(self._remove_symbol)
         self.removeStateButton.clicked.connect(self._remove_state)
         self.finalStateButton.clicked.connect(self._toggle_final_state)
+
+        self.fromNFAbutton.clicked.connect(self._nfa_to_grammar)
+        self.toNFAbutton.clicked.connect(self._grammar_to_nfa)
+
         self.testButton.clicked.connect(self._test_string)
 
         self.actionNew.triggered.connect(self._new)
@@ -25,7 +34,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.transitionTable.cellChanged.connect(self._update_nfa)
 
-        self._new()
+        self._grammar = RegularGrammar()
+        self._nfa = NFA()
+        self._update_table()
 
     def _add_symbol(self) -> None:
         text, ok = QInputDialog.getText(self, "Add symbol", "Symbol:")
@@ -63,6 +74,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.statusbar.showMessage(
                 "String accepted" if self._nfa.accept(self.inputString.text())
                 else "String rejected")
+        except RuntimeError as error:
+            QMessageBox.information(self, "Error", error.args[0])
+
+    def _nfa_to_grammar(self) -> None:
+        self._grammar = RegularGrammar.from_nfa(self._nfa)
+        self._update_grammar_text()
+
+    def _grammar_to_nfa(self) -> None:
+        try:
+            self._nfa = NFA.from_regular_grammar(
+                parse_grammar_text(self.grammarText.toPlainText()))
+            self._update_table()
         except RuntimeError as error:
             QMessageBox.information(self, "Error", error.args[0])
 
@@ -106,8 +129,33 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.transitionTable.setItem(
                     i, j, QTableWidgetItem(transition))
 
+    def _update_grammar_text(self) -> None:
+        """
+        "B", {"aB", "bC", "a"} turns into
+        "B -> aB | bC | a"
+        """
+        def transform_production(non_terminal: str, productions: Set[str]):
+            return "{} -> {}".format(
+                non_terminal, " | ".join(sorted(productions)))
+
+        initial_symbol = self._grammar.initial_symbol()
+        productions = self._grammar.productions()
+
+        text = ""
+
+        if initial_symbol in productions:
+            text = transform_production(
+                initial_symbol, productions[initial_symbol]) + "\n"
+
+        for non_terminal in sorted(set(productions.keys()) - {initial_symbol}):
+            text += transform_production(
+                non_terminal, productions[non_terminal]) + "\n"
+
+        self.grammarText.setPlainText(text)
+
     def _new(self) -> None:
         self._nfa = NFA()
+        self._grammar = RegularGrammar()
         self._update_table()
 
     def _open(self) -> None:
@@ -120,3 +168,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         path, _ = QFileDialog.getSaveFileName(self)
         if path:
             self._nfa.save(path)
+
+
+def parse_grammar_text(grammar: str) -> RegularGrammar:
+    grammar = grammar.strip().replace(" ", "")
+    lines = grammar.split("\n")
+
+    if not all(map(GRAMMAR_PATTERN.match, lines)):
+        raise RuntimeError("Grammar is not regular")
+
+    initial_symbol, prods = lines[0].split("->")
+    productions = {initial_symbol: set(prods.split("|"))}
+    for line in lines[1:]:
+        non_terminal, prods = line.split("->")
+        productions[non_terminal] = set(prods.split("|"))
+
+    return RegularGrammar(initial_symbol, productions)

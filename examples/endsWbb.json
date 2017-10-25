@@ -1,8 +1,8 @@
 {
     "states": [
-        "q0",
-        "q1",
-        "q2"
+        "S",
+        "A",
+        "B"
     ],
     "alphabet": [
         "a",
@@ -10,30 +10,30 @@
     ],
     "transitions": [
         [
-            "q0",
+            "S",
             "a",
             [
-                "q0"
+                "S"
             ]
         ],
         [
-            "q0",
+            "S",
             "b",
             [
-                "q0",
-                "q1"
+                "S",
+                "A"
             ]
         ],
         [
-            "q1",
+            "A",
             "b",
             [
-                "q2"
+                "B"
             ]
         ]
     ],
-    "initial_state": "q0",
+    "initial_state": "S",
     "final_states": [
-        "q2"
+        "B"
     ]
 }
