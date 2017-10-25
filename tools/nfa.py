@@ -54,13 +54,21 @@ class NFA():
         if state != self._initial_state:
             self._states.discard(state)
             self._final_states.discard(state)
-            for transition in self._transitions.values():
-                # remove transitions that go to the removed state
-                transition.discard(state)
+
             for symbol in self._alphabet:
                 # remove useless transitions that come from the removed state
                 if (state, symbol) in self._transitions:
                     del self._transitions[state, symbol]
+
+            empty_transitions = set()  # type Set[Tuple[str, str]]
+            for actual_state, next_state in self._transitions.items():
+                # remove transitions that go to the removed state
+                next_state.discard(state)
+                if not next_state:
+                    empty_transitions.add(actual_state)
+
+            for transition in empty_transitions:
+                del self._transitions[transition]
 
     def toggle_final_state(self, state: str) -> None:
         if state in self._states:
@@ -80,15 +88,20 @@ class NFA():
             states = ", ".join(next_states - self._states)
             raise KeyError("State(s) {} do not exist".format(states))
 
+    def minimize(self) -> None:
+        self.remove_unreachable()
+        self.remove_dead()
+        self.merge_equivalent()
+
     """ Removes the states that the automaton will never be in """
     def remove_unreachable(self) -> None:
         reachable = set()  # type: Set[str]
         new_reachable = {self._initial_state}
         while not new_reachable <= reachable:
             reachable |= new_reachable
-            n = new_reachable.copy()
+            new_reachable_copy = new_reachable.copy()
             new_reachable = set()
-            for state in n:
+            for state in new_reachable_copy:
                 for symbol in self._alphabet:
                     new_reachable.update(
                         self._transitions.get((state, symbol), set()))
@@ -157,9 +170,9 @@ class NFA():
             undistinguishable: Set[FrozenSet[str]]) -> bool:
         for symbol in self._alphabet:
             transition_a = \
-                list(self._transitions.get((state_a, symbol), " "))[0]
+                list(self._transitions.get((state_a, symbol), {""}))[0]
             transition_b = \
-                list(self._transitions.get((state_b, symbol), " "))[0]
+                list(self._transitions.get((state_b, symbol), {""}))[0]
             if transition_a != transition_b and \
                     frozenset((transition_a, transition_b)) not in \
                     undistinguishable:

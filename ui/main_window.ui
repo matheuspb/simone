@@ -201,6 +201,7 @@
     <addaction name="actionRemove_unreachable_states"/>
     <addaction name="actionRemove_dead_states"/>
     <addaction name="actionMerge_equivalent_states"/>
+    <addaction name="actionMinimize"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuMinimize"/>
@@ -243,6 +244,11 @@
   <action name="actionMerge_equivalent_states">
    <property name="text">
     <string>Merge equivalent states</string>
+   </property>
+  </action>
+  <action name="actionMinimize">
+   <property name="text">
+    <string>Minimize</string>
    </property>
   </action>
  </widget>

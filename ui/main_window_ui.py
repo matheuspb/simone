@@ -120,12 +120,15 @@ class Ui_MainWindow(object):
         self.actionRemove_dead_states.setObjectName("actionRemove_dead_states")
         self.actionMerge_equivalent_states = QtWidgets.QAction(MainWindow)
         self.actionMerge_equivalent_states.setObjectName("actionMerge_equivalent_states")
+        self.actionMinimize = QtWidgets.QAction(MainWindow)
+        self.actionMinimize.setObjectName("actionMinimize")
         self.menuFile.addAction(self.actionNew)
         self.menuFile.addAction(self.actionOpen)
         self.menuFile.addAction(self.actionSave)
         self.menuMinimize.addAction(self.actionRemove_unreachable_states)
         self.menuMinimize.addAction(self.actionRemove_dead_states)
         self.menuMinimize.addAction(self.actionMerge_equivalent_states)
+        self.menuMinimize.addAction(self.actionMinimize)
         self.menubar.addAction(self.menuFile.menuAction())
         self.menubar.addAction(self.menuMinimize.menuAction())
 
@@ -158,4 +161,5 @@ class Ui_MainWindow(object):
         self.actionRemove_unreachable_states.setText(_translate("MainWindow", "Remove unreachable states"))
         self.actionRemove_dead_states.setText(_translate("MainWindow", "Remove dead states"))
         self.actionMerge_equivalent_states.setText(_translate("MainWindow", "Merge equivalent states"))
+        self.actionMinimize.setText(_translate("MainWindow", "Minimize"))
 

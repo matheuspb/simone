@@ -37,6 +37,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionRemove_dead_states.triggered.connect(self._remove_dead)
         self.actionMerge_equivalent_states.triggered.connect(
             self._merge_equivalent)
+        self.actionMinimize.triggered.connect(self._minimize)
 
         self.transitionTable.cellChanged.connect(self._update_nfa)
 
@@ -85,6 +86,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def _merge_equivalent(self) -> None:
         self._nfa.merge_equivalent()
+        self._update_table()
+
+    def _minimize(self) -> None:
+        self._nfa.minimize()
         self._update_table()
 
     def _test_string(self) -> None:
