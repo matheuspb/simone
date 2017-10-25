@@ -90,14 +90,12 @@ class NFA():
         for symbol in string:
             next_state = set()
             for state in current_state:
-                next_state.update(self._transitions.setdefault((state, symbol),
-                                                                set())
-                                 )
+                next_state.update(self._transitions.get((state, symbol), set()))
             current_state = next_state
 
         return bool(current_state.intersection(self._final_states))
 
-    def find_reachable(self, states: Set[str], symbol: str) -> Set[str]:
+    def _find_reachable(self, states: Set[str], symbol: str) -> Set[str]:
         """
             Given a set of states, applies a depth search algorithm
             to find the reachable states of them through transitions of the
@@ -109,19 +107,21 @@ class NFA():
                 found.update(self._transitions[(state, symbol)])
         return found
 
-    def insert_deterministic_state(self, actual: Tuple[str, str], 
+    def _determinizate_state(self, actual: Tuple[str, str], 
                                    states_set: Set[str]) -> None:
         """
             For a given set of states, verify whether they pertains to the 
             actual states of the FA. In negative case, add it and insert
             the transitions properly
         """
-        name = ", ".join(str(s) for s in sorted(states_set))
+        name = "".join(str(s) for s in sorted(states_set))
         if (name not in self._states):
             self.add_state(name)
+            if (states_set.intersection(self._final_states)):
+                self._final_states.add(name)
             for symbol in self._alphabet:
-                reachable = self.find_reachable(states_set, symbol)
-                self.insert_deterministic_state((name, symbol), reachable)
+                reachable = self._find_reachable(states_set, symbol)
+                self._determinizate_state((name, symbol), reachable)
 
         self.set_transition(actual[0], actual[1], set([name]))
 
@@ -133,7 +133,7 @@ class NFA():
         original_transitions = self._transitions.copy()
 
         for actual, next_state in original_transitions.items():
-            self.insert_deterministic_state(actual, next_state)
+            self._determinizate_state(actual, next_state)
 
     def save(self, path: str):
         data = {}
