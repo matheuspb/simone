@@ -97,32 +97,43 @@ class NFA():
 
         return bool(current_state.intersection(self._final_states))
 
+    def find_reachable(self, states: Set[str], symbol: str) -> Set[str]:
+        """
+            Given a set of states, applies a depth search algorithm
+            to find the reachable states of them through transitions of the
+            given symbol
+        """
+        found = set()
+        for state in states:
+            if (state, symbol) in self._transitions:
+                found.update(self._transitions[(state, symbol)])
+        return found
+
+    def insert_deterministic_state(self, actual: Tuple[str, str], 
+                                   states_set: Set[str]) -> None:
+        """
+            For a given set of states, verify whether they pertains to the 
+            actual states of the FA. In negative case, add it and insert
+            the transitions properly
+        """
+        name = ", ".join(str(s) for s in sorted(states_set))
+        if (name not in self._states):
+            self.add_state(name)
+            for symbol in self._alphabet:
+                reachable = self.find_reachable(states_set, symbol)
+                self.insert_deterministic_state((name, symbol), reachable)
+
+        self.set_transition(actual[0], actual[1], set([name]))
+
     def determinize(self) -> None:
         """
             Given the actual NFA, determinizes it, appending the new
             transitions and states to the actual ones of the NFA.
         """
-        old_transitions = self._transitions.copy()
+        original_transitions = self._transitions.copy()
 
-        for actual, next_state in old_transitions.items():
-            new_state_name = ", ".join(str(s) for s in sorted(next_state))
-
-            # Include new states
-            if (new_state_name not in self._states):
-                self.add_state(new_state_name)
-                # Find the transitions of the new state
-                for symbol in self._alphabet:
-                    new_state_transition = set()
-                    for compose in next_state:
-                        if (compose, symbol) in self._transitions:
-                            new_state_transition.update(
-                                    str(s) for s in 
-                                    self._transitions[(compose, symbol)])
-
-                    self.set_transition(new_state_name,
-                                        symbol,
-                                        new_state_transition)
-                self.determinize()
+        for actual, next_state in original_transitions.items():
+            self.insert_deterministic_state(actual, next_state)
 
     def save(self, path: str):
         data = {}
