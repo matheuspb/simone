@@ -14,7 +14,7 @@ class TestNFA(unittest.TestCase):
 
         nfa = NFA.load("examples/div3.json")
         true_cases = {"110100111", "111111000", "1110000001"}
-        false_cases = {"1000000110", "110001", "1010001010"}
+        false_cases = {"1000000110", "110001", "1010001010", "211"}
         test(nfa, true_cases, false_cases)
 
         nfa = NFA.load("examples/aaORbb.json")
@@ -23,8 +23,9 @@ class TestNFA(unittest.TestCase):
         test(nfa, true_cases, false_cases)
 
         nfa = NFA.load("examples/endsWbb.json")
-        with self.assertRaises(RuntimeError):
-            nfa.accept("aaaabb")
+        true_cases = {"bb", "abaabbabaabb", "babb", "abbabbabb"}
+        false_cases = {"", "abba", "bbbbbba", "bbbaaabba", "absbb"}
+        test(nfa, true_cases, false_cases)
 
 
 class testRG(unittest.TestCase):
