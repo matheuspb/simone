@@ -42,6 +42,10 @@ class TestNFA(unittest.TestCase):
         false_cases = {"", "0", "00", "11", "111", "0100001", "1000001"}
         self.nfa_test(nfa, true_cases, false_cases)
 
+        with self.assertRaises(RuntimeError):
+            nfa = NFA.load("examples/endsWbb.json")
+            nfa.minimize()
+
 
 class TestRG(unittest.TestCase):
 
