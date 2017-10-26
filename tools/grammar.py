@@ -4,21 +4,21 @@ from tools.nfa import NFA
 
 class RegularGrammar():
     """
-    Regular grammar object, it is represented as a dictionary, for each non
-    terminal symbol of the grammar, there is a dictionary entry with the
-    corresponding strings that it can derive.
+        Regular grammar object, it is represented as a dictionary, for each non
+        terminal symbol of the grammar, there is a dictionary entry with the
+        corresponding strings that it can derive.
 
-    For example, the grammar:
-    S -> aA | bB | a | b
-    A -> aA | a
-    B -> bB | b
+        For example, the grammar:
+        S -> aA | bB | a | b
+        A -> aA | a
+        B -> bB | b
 
-    is represented as:
-    {
-        "S": {"aA", "bB", "a", "b"},
-        "A": {"aA", "a"},
-        "B": {"bB", "b"}
-    }
+        is represented as:
+        {
+            "S": {"aA", "bB", "a", "b"},
+            "A": {"aA", "a"},
+            "B": {"bB", "b"}
+        }
     """
 
     def __init__(
@@ -36,7 +36,8 @@ class RegularGrammar():
     @staticmethod
     def from_nfa(nfa: NFA):
         """
-        Returns a regular grammar that generates the language of the given NFA
+            Returns a regular grammar that generates the language of the given
+            NFA
         """
         initial_symbol = nfa.initial_state()
         productions = {}  # type: Dict[str, Set[str]]

@@ -89,12 +89,15 @@ class NFA():
             raise KeyError("State(s) {} do not exist".format(states))
 
     def minimize(self) -> None:
+        if not self._is_deterministic():
+            raise RuntimeError("Automata is non-deterministic")
+
         self.remove_unreachable()
         self.remove_dead()
         self.merge_equivalent()
 
-    """ Removes the states that the automaton will never be in """
     def remove_unreachable(self) -> None:
+        """ Removes the states that the automaton will never be in """
         reachable = set()  # type: Set[str]
         new_reachable = {self._initial_state}
         while not new_reachable <= reachable:
@@ -110,23 +113,23 @@ class NFA():
         for unreachable_state in unreachable_states:
             self.remove_state(unreachable_state)
 
-    """ Removes states that never reach a final state """
     def remove_dead(self) -> None:
+        """ Removes states that never reach a final state """
         # assumes all unreachable states were removed
         alive_states = self._final_states.copy()
         self._is_alive(self._initial_state, alive_states, set())
         for dead_state in self._states - alive_states:
             self.remove_state(dead_state)
 
-    """
-        Uses the recursive definition of alive state, that is, if you can reach
-        an alive state from the state, it is alive. The initial set of alive
-        states are the final states.
-
-        The visited set is used just to avoid an infinite recursion.
-    """
     def _is_alive(
             self, state: str, alive: Set[str], visited: Set[str]) -> bool:
+        """
+            Uses the recursive definition of alive state, that is, if you can
+            reach an alive state from the state, it is alive. The initial set
+            of alive states are the final states.
+
+            The visited set is used just to avoid an infinite recursion.
+        """
         if state not in visited:
             visited.add(state)
             reachable_states = set()  # type: Set[str]
@@ -139,6 +142,9 @@ class NFA():
         return state in alive
 
     def merge_equivalent(self) -> None:
+        if not self._is_deterministic():
+            raise RuntimeError("Automata is non-deterministic")
+
         undistinguishable = set()  # pairs of undistinguishable states
 
         # initially, you can't distinguish final and non-final states
@@ -161,13 +167,13 @@ class NFA():
         for state_a, state_b in undistinguishable:
             self._merge_states(state_a, state_b)
 
-    """
-        State a and b are distinguishable if they go to distinguishable states
-        for some input symbol.
-    """
     def _are_undistinguishable(
             self, state_a: str, state_b: str,
             undistinguishable: Set[FrozenSet[str]]) -> bool:
+        """
+            State a and b are distinguishable if they go to distinguishable
+            states for some input symbol.
+        """
         for symbol in self._alphabet:
             transition_a = \
                 list(self._transitions.get((state_a, symbol), {""}))[0]
@@ -179,8 +185,8 @@ class NFA():
                 return False
         return True
 
-    """ Merges state b into a, making them one state """
     def _merge_states(self, state_a: str, state_b: str):
+        """ Merges state b into a, making them one state """
         state_to_be_removed = state_b
         state_to_be_kept = state_a
         # avoid removing the initial state or one that's already removed
@@ -251,6 +257,12 @@ class NFA():
 
         for actual, next_state in original_transitions.items():
             self._determinizate_state(actual, next_state)
+
+    def _is_deterministic(self) -> bool:
+        for key, value in self._transitions.items():
+            if len(value) > 1:
+                return False
+        return True
 
     # TODO unit tests
     @staticmethod

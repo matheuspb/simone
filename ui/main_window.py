@@ -86,12 +86,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self._update_table()
 
     def _merge_equivalent(self) -> None:
-        self._nfa.merge_equivalent()
-        self._update_table()
+        try:
+            self._nfa.merge_equivalent()
+            self._update_table()
+        except RuntimeError as error:
+            QMessageBox.information(self, "Error", error.args[0])
 
     def _minimize(self) -> None:
-        self._nfa.minimize()
-        self._update_table()
+        try:
+            self._nfa.minimize()
+            self._update_table()
+        except RuntimeError as error:
+            QMessageBox.information(self, "Error", error.args[0])
 
     def _test_string(self) -> None:
         try:
@@ -159,8 +165,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def _update_grammar_text(self) -> None:
         """
-        "B", {"aB", "bC", "a"} turns into
-        "B -> aB | bC | a"
+            "B", {"aB", "bC", "a"} turns into
+            "B -> aB | bC | a"
         """
         def transform_production(non_terminal: str, productions: Set[str]):
             return "{} -> {}".format(
