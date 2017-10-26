@@ -222,31 +222,28 @@ class NFA():
             to find the reachable states of them through transitions of the
             given symbol
         """
-        found = set()
+        found = set()  # type: Set[str]
         for state in states:
             if (state, symbol) in self._transitions:
-                found.update(self._transitions[(state, symbol)])
+                found.update(self._transitions[state, symbol])
         return found
 
-    def _determinizate_state(
-            self,
-            actual: Tuple[str, str],
-            states_set: Set[str]) -> None:
+    def _determinize_state(
+            self, actual: Tuple[str, str], states_set: Set[str]) -> None:
         """
             For a given set of states, verify whether they pertains to the
             actual states of the FA. In negative case, add it and insert
             the transitions properly
         """
-        name = "".join(str(s) for s in sorted(states_set))
-        if name not in self._states:
+        name = "".join(sorted(states_set))
+        if name and name not in self._states:
             self.add_state(name)
             if states_set.intersection(self._final_states):
                 self._final_states.add(name)
             for symbol in self._alphabet:
                 reachable = self._find_reachable(states_set, symbol)
-                self._determinizate_state((name, symbol), reachable)
-
-        self._transitions[(actual[0], actual[1])] = set([name])
+                self._transitions[name, symbol] = reachable
+                self._determinize_state((name, symbol), reachable)
 
     def determinize(self) -> None:
         """
@@ -255,8 +252,13 @@ class NFA():
         """
         original_transitions = self._transitions.copy()
 
+        # create necessary states
         for actual, next_state in original_transitions.items():
-            self._determinizate_state(actual, next_state)
+            self._determinize_state(actual, next_state)
+
+        # rewrite transitions
+        for actual, next_state in self._transitions.items():
+            self._transitions[actual] = {"".join(sorted(next_state))}
 
     def _is_deterministic(self) -> bool:
         for key, value in self._transitions.items():

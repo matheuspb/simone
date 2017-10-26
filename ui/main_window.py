@@ -15,7 +15,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         QMainWindow.__init__(self)
 
         self.setupUi(self)
-        self.setFixedSize(600, 400)
+        self.resize(600, 400)
 
         self.addSymbolButton.clicked.connect(self._add_symbol)
         self.addStateButton.clicked.connect(self._add_state)
@@ -127,7 +127,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         states = self._nfa.states()
         alphabet = self._nfa.alphabet()
         next_states = \
-            set(re.split(r"\W+", self.transitionTable.item(row, col).text()))
+            set(self.transitionTable.item(row, col).text().replace(
+                " ", "").split(","))
 
         try:
             self._nfa.set_transition(
