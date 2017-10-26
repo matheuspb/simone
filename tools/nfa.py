@@ -1,4 +1,5 @@
-from typing import Dict, List, Tuple, Set, Any
+from typing import Dict, List, Tuple, Set, Any, FrozenSet
+from itertools import combinations
 import json
 
 
@@ -53,13 +54,21 @@ class NFA():
         if state != self._initial_state:
             self._states.discard(state)
             self._final_states.discard(state)
-            for transition in self._transitions.values():
-                # remove transitions that go to the removed state
-                transition.discard(state)
+
             for symbol in self._alphabet:
                 # remove useless transitions that come from the removed state
                 if (state, symbol) in self._transitions:
                     del self._transitions[state, symbol]
+
+            empty_transitions = set()  # type Set[Tuple[str, str]]
+            for actual_state, next_state in self._transitions.items():
+                # remove transitions that go to the removed state
+                next_state.discard(state)
+                if not next_state:
+                    empty_transitions.add(actual_state)
+
+            for transition in empty_transitions:
+                del self._transitions[transition]
 
     def toggle_final_state(self, state: str) -> None:
         if state in self._states:
@@ -78,6 +87,118 @@ class NFA():
         else:
             states = ", ".join(next_states - self._states)
             raise KeyError("State(s) {} do not exist".format(states))
+
+    def minimize(self) -> None:
+        if not self._is_deterministic():
+            raise RuntimeError("Automata is non-deterministic")
+
+        self.remove_unreachable()
+        self.remove_dead()
+        self.merge_equivalent()
+
+    def remove_unreachable(self) -> None:
+        """ Removes the states that the automaton will never be in """
+        reachable = set()  # type: Set[str]
+        new_reachable = {self._initial_state}
+        while not new_reachable <= reachable:
+            reachable |= new_reachable
+            new_reachable_copy = new_reachable.copy()
+            new_reachable = set()
+            for state in new_reachable_copy:
+                for symbol in self._alphabet:
+                    new_reachable.update(
+                        self._transitions.get((state, symbol), set()))
+
+        unreachable_states = self._states - reachable
+        for unreachable_state in unreachable_states:
+            self.remove_state(unreachable_state)
+
+    def remove_dead(self) -> None:
+        """ Removes states that never reach a final state """
+        # assumes all unreachable states were removed
+        alive_states = self._final_states.copy()
+        self._is_alive(self._initial_state, alive_states, set())
+        for dead_state in self._states - alive_states:
+            self.remove_state(dead_state)
+
+    def _is_alive(
+            self, state: str, alive: Set[str], visited: Set[str]) -> bool:
+        """
+            Uses the recursive definition of alive state, that is, if you can
+            reach an alive state from the state, it is alive. The initial set
+            of alive states are the final states.
+
+            The visited set is used just to avoid an infinite recursion.
+        """
+        if state not in visited:
+            visited.add(state)
+            reachable_states = set()  # type: Set[str]
+            for symbol in self._alphabet:
+                reachable_states.update(
+                    self._transitions.get((state, symbol), set()))
+            for reachable_state in reachable_states:
+                if self._is_alive(reachable_state, alive, visited):
+                    alive.add(state)
+        return state in alive
+
+    def merge_equivalent(self) -> None:
+        if not self._is_deterministic():
+            raise RuntimeError("Automata is non-deterministic")
+
+        undistinguishable = set()  # pairs of undistinguishable states
+
+        # initially, you can't distinguish final and non-final states
+        for pair in combinations(self._states - self._final_states, 2):
+            undistinguishable.add(frozenset(pair))
+        for pair in combinations(self._final_states, 2):
+            undistinguishable.add(frozenset(pair))
+
+        # find new distinguishable states
+        while True:
+            undistinguishable_copy = undistinguishable.copy()
+            for state_a, state_b in undistinguishable_copy:
+                if not self._are_undistinguishable(
+                        state_a, state_b, undistinguishable_copy):
+                    undistinguishable.remove(frozenset((state_a, state_b)))
+            if undistinguishable == undistinguishable_copy:
+                # no new distinguishable states were found
+                break
+
+        for state_a, state_b in undistinguishable:
+            self._merge_states(state_a, state_b)
+
+    def _are_undistinguishable(
+            self, state_a: str, state_b: str,
+            undistinguishable: Set[FrozenSet[str]]) -> bool:
+        """
+            State a and b are distinguishable if they go to distinguishable
+            states for some input symbol.
+        """
+        for symbol in self._alphabet:
+            transition_a = \
+                list(self._transitions.get((state_a, symbol), {""}))[0]
+            transition_b = \
+                list(self._transitions.get((state_b, symbol), {""}))[0]
+            if transition_a != transition_b and \
+                    frozenset((transition_a, transition_b)) not in \
+                    undistinguishable:
+                return False
+        return True
+
+    def _merge_states(self, state_a: str, state_b: str):
+        """ Merges state b into a, making them one state """
+        state_to_be_removed = state_b
+        state_to_be_kept = state_a
+        # avoid removing the initial state or one that's already removed
+        if state_to_be_removed == self._initial_state or \
+                state_to_be_kept not in self._states:
+            state_to_be_removed = state_a
+            state_to_be_kept = state_b
+
+        for actual_state, next_state in self._transitions.items():
+            if next_state == {state_to_be_removed}:
+                self._transitions[actual_state] = {state_to_be_kept}
+        self.remove_state(state_to_be_removed)
 
     def accept(self, string: str) -> bool:
         """
@@ -136,6 +257,12 @@ class NFA():
 
         for actual, next_state in original_transitions.items():
             self._determinizate_state(actual, next_state)
+
+    def _is_deterministic(self) -> bool:
+        for key, value in self._transitions.items():
+            if len(value) > 1:
+                return False
+        return True
 
     # TODO unit tests
     @staticmethod

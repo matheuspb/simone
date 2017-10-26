@@ -33,6 +33,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionOpen.triggered.connect(self._open)
         self.actionSave.triggered.connect(self._save)
 
+        self.actionRemove_unreachable_states.triggered.connect(
+            self._remove_unreachable)
+        self.actionRemove_dead_states.triggered.connect(self._remove_dead)
+        self.actionMerge_equivalent_states.triggered.connect(
+            self._merge_equivalent)
+        self.actionMinimize.triggered.connect(self._minimize)
+
         self.transitionTable.cellChanged.connect(self._update_nfa)
 
         self._grammar = RegularGrammar()
@@ -69,6 +76,28 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if ok:
             self._nfa.toggle_final_state(text)
             self._update_table()
+
+    def _remove_unreachable(self) -> None:
+        self._nfa.remove_unreachable()
+        self._update_table()
+
+    def _remove_dead(self) -> None:
+        self._nfa.remove_dead()
+        self._update_table()
+
+    def _merge_equivalent(self) -> None:
+        try:
+            self._nfa.merge_equivalent()
+            self._update_table()
+        except RuntimeError as error:
+            QMessageBox.information(self, "Error", error.args[0])
+
+    def _minimize(self) -> None:
+        try:
+            self._nfa.minimize()
+            self._update_table()
+        except RuntimeError as error:
+            QMessageBox.information(self, "Error", error.args[0])
 
     def _test_string(self) -> None:
         try:
@@ -136,8 +165,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def _update_grammar_text(self) -> None:
         """
-        "B", {"aB", "bC", "a"} turns into
-        "B -> aB | bC | a"
+            "B", {"aB", "bC", "a"} turns into
+            "B -> aB | bC | a"
         """
         def transform_production(non_terminal: str, productions: Set[str]):
             return "{} -> {}".format(
