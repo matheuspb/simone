@@ -195,19 +195,62 @@ class NFA():
         self.remove_state(state_to_be_removed)
 
     def accept(self, string: str) -> bool:
-        current_state = self._initial_state
-        try:
-            for symbol in string:
-                next_state = self._transitions[current_state, symbol]
-                if len(next_state) == 1:
-                    current_state = next(iter(next_state))
-                else:
-                    raise RuntimeError(
-                        "Reached a non-deterministic transition")
-        except KeyError:
-            # undefined transition
-            return False
-        return current_state in self._final_states
+        """
+            Checks if a given string is member of the language recognized by
+            the NFA. Using non-deterministic transitions.
+        """
+        current_state = set([self._initial_state])
+
+        for symbol in string:
+            next_state = set()
+            for state in current_state:
+                next_state.update(
+                        self._transitions.get((state, symbol), set()))
+            current_state = next_state
+
+        return bool(current_state.intersection(self._final_states))
+
+    def _find_reachable(self, states: Set[str], symbol: str) -> Set[str]:
+        """
+            Given a set of states, applies a depth search algorithm
+            to find the reachable states of them through transitions of the
+            given symbol
+        """
+        found = set()
+        for state in states:
+            if (state, symbol) in self._transitions:
+                found.update(self._transitions[(state, symbol)])
+        return found
+
+    def _determinizate_state(
+            self,
+            actual: Tuple[str, str],
+            states_set: Set[str]) -> None:
+        """
+            For a given set of states, verify whether they pertains to the
+            actual states of the FA. In negative case, add it and insert
+            the transitions properly
+        """
+        name = "".join(str(s) for s in sorted(states_set))
+        if name not in self._states:
+            self.add_state(name)
+            if states_set.intersection(self._final_states):
+                self._final_states.add(name)
+            for symbol in self._alphabet:
+                reachable = self._find_reachable(states_set, symbol)
+                self._determinizate_state((name, symbol), reachable)
+
+        self._transitions[(actual[0], actual[1])] = set([name])
+
+    def determinize(self) -> None:
+        """
+            Given the actual NFA, determinizes it, appending the new
+            transitions and states to the actual ones of the NFA.
+        """
+        original_transitions = self._transitions.copy()
+
+        for actual, next_state in original_transitions.items():
+            self._determinizate_state(actual, next_state)
 
     # TODO unit tests
     @staticmethod

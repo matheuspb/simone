@@ -27,6 +27,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.toNFAbutton.clicked.connect(self._grammar_to_nfa)
 
         self.testButton.clicked.connect(self._test_string)
+        self.determinizationButton.clicked.connect(self._convert_to_dfa)
 
         self.actionNew.triggered.connect(self._new)
         self.actionOpen.triggered.connect(self._open)
@@ -100,6 +101,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         except RuntimeError as error:
             QMessageBox.information(self, "Error", error.args[0])
 
+    def _convert_to_dfa(self) -> None:
+        self._nfa.determinize()
+        self._update_table()
+
     def _nfa_to_grammar(self) -> None:
         self._grammar = RegularGrammar.from_nfa(self._nfa)
         self._update_grammar_text()
@@ -116,7 +121,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         states = self._nfa.states()
         alphabet = self._nfa.alphabet()
         next_states = \
-            set(self.transitionTable.item(row, col).text().split(","))
+            set(re.split(r"\W+", self.transitionTable.item(row, col).text()))
 
         try:
             self._nfa.set_transition(
