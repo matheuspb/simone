@@ -89,7 +89,8 @@ class NFA():
         for symbol in string:
             next_state = set()
             for state in current_state:
-                next_state.update(self._transitions.get((state, symbol), set()))
+                next_state.update(
+                        self._transitions.get((state, symbol), set()))
             current_state = next_state
 
         return bool(current_state.intersection(self._final_states))
@@ -106,23 +107,25 @@ class NFA():
                 found.update(self._transitions[(state, symbol)])
         return found
 
-    def _determinizate_state(self, actual: Tuple[str, str], 
-                                   states_set: Set[str]) -> None:
+    def _determinizate_state(
+            self,
+            actual: Tuple[str, str],
+            states_set: Set[str]) -> None:
         """
-            For a given set of states, verify whether they pertains to the 
+            For a given set of states, verify whether they pertains to the
             actual states of the FA. In negative case, add it and insert
             the transitions properly
         """
         name = "".join(str(s) for s in sorted(states_set))
-        if (name not in self._states):
+        if name not in self._states:
             self.add_state(name)
-            if (states_set.intersection(self._final_states)):
+            if states_set.intersection(self._final_states):
                 self._final_states.add(name)
             for symbol in self._alphabet:
                 reachable = self._find_reachable(states_set, symbol)
                 self._determinizate_state((name, symbol), reachable)
 
-        self.set_transition(actual[0], actual[1], set([name]))
+        self._transitions[(actual[0], actual[1])] = set([name])
 
     def determinize(self) -> None:
         """
