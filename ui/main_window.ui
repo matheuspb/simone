@@ -58,14 +58,14 @@
               <item>
                <widget class="QPushButton" name="addSymbolButton">
                 <property name="text">
-                 <string>Add Symbol</string>
+                 <string>Add Symbols</string>
                 </property>
                </widget>
               </item>
               <item>
                <widget class="QPushButton" name="addStateButton">
                 <property name="text">
-                 <string>Add State</string>
+                 <string>Add States</string>
                 </property>
                </widget>
               </item>
@@ -91,14 +91,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QPushButton" name="determinizationButton">
-                <property name="text">
-                 <string>Determinize</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <spacer name="verticalSpacer">
+               <spacer name="verticalSpacer_1">
                 <property name="orientation">
                  <enum>Qt::Vertical</enum>
                 </property>
@@ -130,7 +123,7 @@
              </widget>
             </item>
             <item row="0" column="1">
-             <layout class="QVBoxLayout" name="verticalLayout_6">
+             <layout class="QVBoxLayout" name="verticalLayout_4">
               <item>
                <widget class="QPushButton" name="fromNFAbutton">
                 <property name="text">
@@ -190,7 +183,7 @@
      <x>0</x>
      <y>0</y>
      <width>600</width>
-     <height>26</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -201,17 +194,35 @@
     <addaction name="actionOpen"/>
     <addaction name="actionSave"/>
    </widget>
-   <widget class="QMenu" name="menuMinimize">
+   <widget class="QMenu" name="menuTransformations">
     <property name="title">
      <string>Transformations</string>
     </property>
-    <addaction name="actionRemove_unreachable_states"/>
-    <addaction name="actionRemove_dead_states"/>
-    <addaction name="actionMerge_equivalent_states"/>
-    <addaction name="actionMinimize"/>
+    <widget class="QMenu" name="menuMinimize">
+     <property name="title">
+      <string>Minimize</string>
+     </property>
+     <addaction name="actionRemove_unreachable_states"/>
+     <addaction name="actionRemove_dead_states"/>
+     <addaction name="actionMerge_equivalent_states"/>
+     <addaction name="separator"/>
+     <addaction name="actionFull_minimization"/>
+    </widget>
+    <widget class="QMenu" name="menuBeautify">
+     <property name="title">
+      <string>Beautify</string>
+     </property>
+     <addaction name="action_to_qn"/>
+     <addaction name="action_to_abc"/>
+    </widget>
+    <addaction name="actionDeterminize"/>
+    <addaction name="separator"/>
+    <addaction name="menuMinimize"/>
+    <addaction name="separator"/>
+    <addaction name="menuBeautify"/>
    </widget>
    <addaction name="menuFile"/>
-   <addaction name="menuMinimize"/>
+   <addaction name="menuTransformations"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionOpen">
@@ -253,9 +264,30 @@
     <string>Merge equivalent states</string>
    </property>
   </action>
-  <action name="actionMinimize">
+  <action name="actionDeterminize">
    <property name="text">
-    <string>Minimize</string>
+    <string>Determinize</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+D</string>
+   </property>
+  </action>
+  <action name="actionFull_minimization">
+   <property name="text">
+    <string>Full minimization</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+M</string>
+   </property>
+  </action>
+  <action name="action_to_qn">
+   <property name="text">
+    <string>to q0,q1,...,qn</string>
+   </property>
+  </action>
+  <action name="action_to_abc">
+   <property name="text">
+    <string>to S,A,B,...,Z</string>
    </property>
   </action>
  </widget>

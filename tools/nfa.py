@@ -266,6 +266,34 @@ class NFA():
                 return False
         return True
 
+    def beautify_qn(self) -> None:
+        beautiful_states = {self._initial_state: "q0"}
+        for n, state in enumerate(sorted(
+                self._states - {self._initial_state})):
+            beautiful_states[state] = "q" + str(n + 1)
+        self._beautify(beautiful_states)
+
+    def beautify_abc(self) -> None:
+        beautiful_states = {self._initial_state: "S"}
+        for n, state in enumerate(sorted(
+                self._states - {self._initial_state})):
+            beautiful_states[state] = chr(ord('A') + n)
+        self._beautify(beautiful_states)
+
+    def _beautify(self, beautiful_states: Dict[str, str]) -> None:
+        self._initial_state = beautiful_states[self._initial_state]
+        self._states = set(beautiful_states.values())
+
+        self._transitions = {
+            (beautiful_states[actual_state], symbol):
+            {beautiful_states[state] for state in value}
+                for (actual_state, symbol), value in self._transitions.items()
+        }
+
+        self._final_states = {
+            beautiful_states[state] for state in self._final_states
+        }
+
     # TODO unit tests
     @staticmethod
     def from_regular_grammar(grammar):

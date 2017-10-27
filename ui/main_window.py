@@ -17,8 +17,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.setupUi(self)
         self.resize(600, 400)
 
-        self.addSymbolButton.clicked.connect(self._add_symbol)
-        self.addStateButton.clicked.connect(self._add_state)
+        self.addSymbolButton.clicked.connect(self._add_symbols)
+        self.addStateButton.clicked.connect(self._add_states)
         self.removeSymbolButton.clicked.connect(self._remove_symbol)
         self.removeStateButton.clicked.connect(self._remove_state)
         self.finalStateButton.clicked.connect(self._toggle_final_state)
@@ -27,18 +27,22 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.toNFAbutton.clicked.connect(self._grammar_to_nfa)
 
         self.testButton.clicked.connect(self._test_string)
-        self.determinizationButton.clicked.connect(self._convert_to_dfa)
 
         self.actionNew.triggered.connect(self._new)
         self.actionOpen.triggered.connect(self._open)
         self.actionSave.triggered.connect(self._save)
+
+        self.actionDeterminize.triggered.connect(self._determinize)
 
         self.actionRemove_unreachable_states.triggered.connect(
             self._remove_unreachable)
         self.actionRemove_dead_states.triggered.connect(self._remove_dead)
         self.actionMerge_equivalent_states.triggered.connect(
             self._merge_equivalent)
-        self.actionMinimize.triggered.connect(self._minimize)
+        self.actionFull_minimization.triggered.connect(self._minimize)
+
+        self.action_to_abc.triggered.connect(self._beautify_abc)
+        self.action_to_qn.triggered.connect(self._beautify_qn)
 
         self.transitionTable.cellChanged.connect(self._update_nfa)
 
@@ -46,16 +50,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self._nfa = NFA()
         self._update_table()
 
-    def _add_symbol(self) -> None:
-        text, ok = QInputDialog.getText(self, "Add symbol", "Symbol:")
+    def _add_symbols(self) -> None:
+        text, ok = QInputDialog.getText(
+            self, "Add symbols", "Symbols (a,b,c,...):")
         if ok:
-            self._nfa.add_symbol(text)
+            for symbol in text.replace(" ", "").split(","):
+                self._nfa.add_symbol(symbol)
             self._update_table()
 
-    def _add_state(self) -> None:
-        text, ok = QInputDialog.getText(self, "Add state", "State:")
+    def _add_states(self) -> None:
+        text, ok = QInputDialog.getText(
+            self, "Add states", "States (q0,q1,...):")
         if ok:
-            self._nfa.add_state(text)
+            for state in text.replace(" ", "").split(","):
+                self._nfa.add_state(state)
             self._update_table()
 
     def _remove_symbol(self) -> None:
@@ -71,8 +79,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self._update_table()
 
     def _toggle_final_state(self) -> None:
-        text, ok = QInputDialog.getText(
-            self, "Final state", "State:")
+        text, ok = QInputDialog.getText(self, "Final state", "State:")
         if ok:
             self._nfa.toggle_final_state(text)
             self._update_table()
@@ -107,8 +114,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         except RuntimeError as error:
             QMessageBox.information(self, "Error", error.args[0])
 
-    def _convert_to_dfa(self) -> None:
+    def _determinize(self) -> None:
         self._nfa.determinize()
+        self._update_table()
+
+    def _beautify_qn(self) -> None:
+        self._nfa.beautify_qn()
+        self._update_table()
+
+    def _beautify_abc(self) -> None:
+        self._nfa.beautify_abc()
         self._update_table()
 
     def _nfa_to_grammar(self) -> None:
@@ -159,7 +174,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         table = self._nfa.transition_table()
         for i, state in enumerate(self._nfa.states()):
             for j, symbol in enumerate(alphabet):
-                transition = ",".join(table[(state, symbol)]) \
+                transition = ",".join(sorted(table[state, symbol])) \
                     if (state, symbol) in table else ""
                 self.transitionTable.setItem(
                     i, j, QTableWidgetItem(transition))
