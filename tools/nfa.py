@@ -89,7 +89,7 @@ class NFA():
             raise KeyError("State(s) {} do not exist".format(states))
 
     def minimize(self) -> None:
-        if not self._is_deterministic():
+        if not self.is_deterministic():
             raise RuntimeError("Automata is non-deterministic")
 
         self.remove_unreachable()
@@ -142,7 +142,7 @@ class NFA():
         return state in alive
 
     def merge_equivalent(self) -> None:
-        if not self._is_deterministic():
+        if not self.is_deterministic():
             raise RuntimeError("Automata is non-deterministic")
 
         undistinguishable = set()  # pairs of undistinguishable states
@@ -260,9 +260,9 @@ class NFA():
         for actual, next_state in self._transitions.items():
             self._transitions[actual] = {"".join(sorted(next_state))}
 
-    def _is_deterministic(self) -> bool:
-        for key, value in self._transitions.items():
-            if len(value) > 1:
+    def is_deterministic(self) -> bool:
+        for transition in self._transitions.values():
+            if len(transition) > 1:
                 return False
         return True
 

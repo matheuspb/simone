@@ -22,11 +22,6 @@ class TestNFA(unittest.TestCase):
         false_cases = {"", "aabb", "bbaa", "ababababaababababb"}
         self.nfa_test(nfa, true_cases, false_cases)
 
-        nfa = NFA.load("examples/endsWbb.json")
-        true_cases = {"bb", "abaabbabaabb", "babb", "abbabbabb"}
-        false_cases = {"", "abba", "bbbbbba", "bbbaaabba", "absbb"}
-        self.nfa_test(nfa, true_cases, false_cases)
-
     def test_minimization(self) -> None:
         nfa = NFA.load("examples/bdiv3.json")
         nfa.minimize()
@@ -45,6 +40,26 @@ class TestNFA(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             nfa = NFA.load("examples/endsWbb.json")
             nfa.minimize()
+
+    def test_determinization(self) -> None:
+        nfa = NFA.load("examples/endsWbb.json")
+        self.assertFalse(nfa.is_deterministic())
+        true_cases = {"bb", "abaabbabaabb", "babb", "abbabbabb"}
+        false_cases = {"", "abba", "bbbbbba", "bbbaaabba", "absbb"}
+        self.nfa_test(nfa, true_cases, false_cases)
+        nfa.determinize()
+        self.assertTrue(nfa.is_deterministic())
+        self.nfa_test(nfa, true_cases, false_cases)
+
+        nfa = NFA.load("examples/bad_case.json")
+        self.assertFalse(nfa.is_deterministic())
+        true_cases = {"bb", "abaabbabaabb", "babb", "abbabbabb"}
+        true_cases = {"baaa", "bbbb", "aababa", "bbbbbbbb"}
+        false_cases = {"", "abbb", "aaaaaa"}
+        self.nfa_test(nfa, true_cases, false_cases)
+        nfa.determinize()
+        self.assertTrue(nfa.is_deterministic())
+        self.nfa_test(nfa, true_cases, false_cases)
 
 
 class TestRG(unittest.TestCase):
