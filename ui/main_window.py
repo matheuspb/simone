@@ -123,8 +123,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self._update_table()
 
     def _beautify_abc(self) -> None:
-        self._nfa.beautify_abc()
-        self._update_table()
+        try:
+            self._nfa.beautify_abc()
+            self._update_table()
+        except RuntimeError as error:
+            QMessageBox.information(self, "Error", error.args[0])
 
     def _nfa_to_grammar(self) -> None:
         self._grammar = RegularGrammar.from_nfa(self._nfa)

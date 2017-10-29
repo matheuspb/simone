@@ -274,10 +274,16 @@ class NFA():
         self._beautify(beautiful_states)
 
     def beautify_abc(self) -> None:
+        if len(self._states) > 26:
+            raise RuntimeError("Too many states")
+
         beautiful_states = {self._initial_state: "S"}
-        for n, state in enumerate(sorted(
-                self._states - {self._initial_state})):
+        n = 0
+        for state in sorted(self._states - {self._initial_state}):
             beautiful_states[state] = chr(ord('A') + n)
+            if n == 17:  # skip "S", the initial state
+                n += 1
+            n += 1
         self._beautify(beautiful_states)
 
     def _beautify(self, beautiful_states: Dict[str, str]) -> None:
