@@ -103,43 +103,28 @@ class NFA():
         while not new_reachable <= reachable:
             reachable |= new_reachable
             new_reachable_copy = new_reachable.copy()
-            new_reachable = set()
+            new_reachable = set()  # type: Set[str]
             for state in new_reachable_copy:
                 for symbol in self._alphabet:
                     new_reachable.update(
                         self._transitions.get((state, symbol), set()))
 
-        unreachable_states = self._states - reachable
-        for unreachable_state in unreachable_states:
+        for unreachable_state in self._states - reachable:
             self.remove_state(unreachable_state)
 
     def remove_dead(self) -> None:
         """ Removes states that never reach a final state """
-        # assumes all unreachable states were removed
-        alive_states = self._final_states.copy()
-        self._is_alive(self._initial_state, alive_states, set())
-        for dead_state in self._states - alive_states:
+        alive = set()  # type: Set[str]
+        new_alive = self._final_states.copy()
+        while not new_alive <= alive:
+            alive |= new_alive
+            new_alive = set()  # type: Set[str]
+            for (state, _), next_states in self._transitions.items():
+                if any(next_state in alive for next_state in next_states):
+                    new_alive.add(state)
+
+        for dead_state in self._states - alive:
             self.remove_state(dead_state)
-
-    def _is_alive(
-            self, state: str, alive: Set[str], visited: Set[str]) -> bool:
-        """
-            Uses the recursive definition of alive state, that is, if you can
-            reach an alive state from the state, it is alive. The initial set
-            of alive states are the final states.
-
-            The visited set is used just to avoid an infinite recursion.
-        """
-        if state not in visited:
-            visited.add(state)
-            reachable_states = set()  # type: Set[str]
-            for symbol in self._alphabet:
-                reachable_states.update(
-                    self._transitions.get((state, symbol), set()))
-            for reachable_state in reachable_states:
-                if self._is_alive(reachable_state, alive, visited):
-                    alive.add(state)
-        return state in alive
 
     def merge_equivalent(self) -> None:
         if not self.is_deterministic():
