@@ -6,3 +6,6 @@
 * [endsWbb.json](endsWbb.json) - String ends with `bb`
 * [bdiv3.json](bdiv3.json) - Numbers of `b`s divisible by 3
 * [one1.json](one1.json) - There is only one `1` character
+* [bad\_case.json](bad_case.json) - Accepts the language:
+  `(a|b)*b(a|b)(a|b)(a|b)`, it is a bad case for the powerset construction,
+  because the deterministic automaton gets pretty big.

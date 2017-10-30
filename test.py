@@ -22,11 +22,6 @@ class TestNFA(unittest.TestCase):
         false_cases = {"", "aabb", "bbaa", "ababababaababababb"}
         self.nfa_test(nfa, true_cases, false_cases)
 
-        nfa = NFA.load("examples/endsWbb.json")
-        true_cases = {"bb", "abaabbabaabb", "babb", "abbabbabb"}
-        false_cases = {"", "abba", "bbbbbba", "bbbaaabba", "absbb"}
-        self.nfa_test(nfa, true_cases, false_cases)
-
     def test_minimization(self) -> None:
         nfa = NFA.load("examples/bdiv3.json")
         nfa.minimize()
@@ -42,9 +37,43 @@ class TestNFA(unittest.TestCase):
         false_cases = {"", "0", "00", "11", "111", "0100001", "1000001"}
         self.nfa_test(nfa, true_cases, false_cases)
 
+        nfa = NFA.load("examples/div5.json")
+        nfa.determinize()
+        nfa.minimize()
+        self.assertEqual(len(nfa.states()), 6)
+        true_cases = {"0", "101", "1000101011"}
+        false_cases = {"", "1", "101010111", "11101010"}
+        self.nfa_test(nfa, true_cases, false_cases)
+
         with self.assertRaises(RuntimeError):
             nfa = NFA.load("examples/endsWbb.json")
             nfa.minimize()
+
+    def test_determinization(self) -> None:
+        nfa = NFA.load("examples/endsWbb.json")
+        self.assertFalse(nfa.is_deterministic())
+        true_cases = {"bb", "abaabbabaabb", "babb", "abbabbabb"}
+        false_cases = {"", "abba", "bbbbbba", "bbbaaabba", "absbb"}
+        self.nfa_test(nfa, true_cases, false_cases)
+        nfa.determinize()
+        self.assertTrue(nfa.is_deterministic())
+        self.nfa_test(nfa, true_cases, false_cases)
+
+        nfa = NFA.load("examples/bad_case.json")
+        self.assertFalse(nfa.is_deterministic())
+        true_cases = {"bb", "abaabbabaabb", "babb", "abbabbabb"}
+        true_cases = {"baaa", "bbbb", "aababa", "bbbbbbbb"}
+        false_cases = {"", "abbb", "aaaaaa"}
+        self.nfa_test(nfa, true_cases, false_cases)
+        nfa.determinize()
+        self.assertTrue(nfa.is_deterministic())
+        self.nfa_test(nfa, true_cases, false_cases)
+
+    def test_dead_removal(self) -> None:
+        nfa = NFA.load("examples/one1.json")
+        self.assertTrue(nfa.states(), set(['A', 'B', 'C', 'D', 'E', 'F']))
+        nfa.remove_dead()
+        self.assertTrue(nfa.states(), set(['A', 'B', 'C', 'D', 'E']))
 
 
 class TestRG(unittest.TestCase):
@@ -69,6 +98,38 @@ class TestRG(unittest.TestCase):
                 "S": {"aS", "bS", "bA"},
                 "A": {"b", "bB"}
             })
+
+    def test_rg_to_nfa_conversion(self) -> None:
+        grammar = RegularGrammar("S", {"S": {"&"}})
+        nfa = NFA.from_regular_grammar(grammar)
+        self.assertTrue(nfa.accept(""))
+
+        test_nfa = TestNFA()
+
+        grammar = RegularGrammar("S", {
+            "S": {"0S", "1A", "0"},
+            "A": {"0B", "1C"},
+            "B": {"0D", "1S", "1"},
+            "C": {"0A", "1B"},
+            "D": {"0C", "1D"}
+        })
+        nfa = NFA.from_regular_grammar(grammar)
+        true_cases = {"0", "101", "1000101011"}
+        false_cases = {"", "1", "101010111", "11101010"}
+        test_nfa.nfa_test(nfa, true_cases, false_cases)
+
+        grammar = RegularGrammar("S'", {
+            "S'": {"aA", "cC", "bA", "bC", "&"},
+            "S": {"aA", "cC", "bA", "bC"},
+            "A": {"bS", "cD", "b", "c"},
+            "C": {"bS", "aE", "b", "a"},
+            "D": {"aA", "bA", "bC"},
+            "E": {"cC", "bC", "bA"},
+        })
+        nfa = NFA.from_regular_grammar(grammar)
+        true_cases = {"", "abab", "caca", "abcabbbacb"}
+        false_cases = {"aa", "cc", "bbb", "babcb"}
+        test_nfa.nfa_test(nfa, true_cases, false_cases)
 
 if __name__ == "__main__":
     unittest.main()
