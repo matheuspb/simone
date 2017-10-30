@@ -121,6 +121,15 @@ class NFA():
         for dead_state in self._states - alive_states:
             self.remove_state(dead_state)
 
+    def is_empty(self) -> bool:
+        """ Checks if the language defined by the automata is empty """
+        alive = self._is_alive(
+                    self._initial_state,
+                    self._final_states,
+                    set())
+
+        return not (bool(len(self._transitions)) and alive)
+
     def _is_alive(
             self, state: str, alive: Set[str], visited: Set[str]) -> bool:
         """

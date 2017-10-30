@@ -84,6 +84,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self._nfa.toggle_final_state(text)
             self._update_table()
 
+    def _test_emptiness(self) -> None:
+        if self._nfa.is_empty():
+            self.statusbar.showMessage("The language is empty.")
+
     def _remove_unreachable(self) -> None:
         self._nfa.remove_unreachable()
         self._update_table()
@@ -181,6 +185,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     if (state, symbol) in table else ""
                 self.transitionTable.setItem(
                     i, j, QTableWidgetItem(transition))
+        self._test_emptiness()
 
     def _update_grammar_text(self) -> None:
         """
