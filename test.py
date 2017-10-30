@@ -69,6 +69,12 @@ class TestNFA(unittest.TestCase):
         self.assertTrue(nfa.is_deterministic())
         self.nfa_test(nfa, true_cases, false_cases)
 
+    def test_dead_removal(self) -> None:
+        nfa = NFA.load("examples/one1.json")
+        self.assertTrue(nfa.states(), set(['A', 'B', 'C', 'D', 'E', 'F']))
+        nfa.remove_dead()
+        self.assertTrue(nfa.states(), set(['A', 'B', 'C', 'D', 'E']))
+
 
 class TestRG(unittest.TestCase):
 
