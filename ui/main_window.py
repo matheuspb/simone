@@ -3,6 +3,7 @@ import re
 from ui.main_window_ui import Ui_MainWindow
 from tools.nfa import NFA
 from tools.grammar import RegularGrammar
+from tools.regex import RegExpParser, thread_tree, traverse
 from PyQt5.QtWidgets import (
     QMainWindow, QTableWidgetItem, QInputDialog, QMessageBox, QFileDialog)
 
@@ -16,6 +17,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.setupUi(self)
         self.resize(600, 400)
+
+        self.regexToDFAButton.clicked.connect(self._validate_regex)
 
         self.addSymbolButton.clicked.connect(self._add_symbols)
         self.addStateButton.clicked.connect(self._add_states)
@@ -49,6 +52,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self._grammar = RegularGrammar()
         self._nfa = NFA()
         self._update_table()
+
+    def _validate_regex(self) -> None:
+        try:
+            parser = RegExpParser(self.regexInput.text())
+            root = parser.parse()
+            thread_tree(root)
+            traverse(root)
+            self.statusbar.showMessage("Valid regex")
+        except RuntimeError as error:
+            self.statusbar.showMessage("Invalid regex")
 
     def _add_symbols(self) -> None:
         text, ok = QInputDialog.getText(
