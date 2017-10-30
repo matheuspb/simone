@@ -285,7 +285,6 @@ class NFA():
             beautiful_states[state] for state in self._final_states
         }
 
-    # TODO unit tests
     @staticmethod
     def from_regular_grammar(grammar):
         initial_symbol = grammar.initial_symbol()
