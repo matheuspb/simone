@@ -196,7 +196,7 @@ class NFA():
             next_state = set()
             for state in current_state:
                 next_state.update(
-                        self._transitions.get((state, symbol), set()))
+                    self._transitions.get((state, symbol), set()))
             current_state = next_state
 
         return bool(current_state.intersection(self._final_states))
@@ -213,8 +213,22 @@ class NFA():
                 found.update(self._transitions[state, symbol])
         return found
 
-    def _determinize_state(
-            self, actual: Tuple[str, str], states_set: Set[str]) -> None:
+    def determinize(self) -> None:
+        """
+            Given the actual NFA, determinizes it, appending the new
+            transitions and states to the actual ones of the NFA.
+        """
+        original_transitions = self._transitions.copy()
+
+        # create necessary states
+        for actual, next_state in original_transitions.items():
+            self._determinize_state(next_state)
+
+        # rewrite transitions
+        for actual, next_state in self._transitions.items():
+            self._transitions[actual] = {"".join(sorted(next_state))}
+
+    def _determinize_state(self, states_set: Set[str]) -> None:
         """
             For a given set of states, verify whether they pertains to the
             actual states of the FA. In negative case, add it and insert
@@ -228,22 +242,7 @@ class NFA():
             for symbol in self._alphabet:
                 reachable = self._find_reachable(states_set, symbol)
                 self._transitions[name, symbol] = reachable
-                self._determinize_state((name, symbol), reachable)
-
-    def determinize(self) -> None:
-        """
-            Given the actual NFA, determinizes it, appending the new
-            transitions and states to the actual ones of the NFA.
-        """
-        original_transitions = self._transitions.copy()
-
-        # create necessary states
-        for actual, next_state in original_transitions.items():
-            self._determinize_state(actual, next_state)
-
-        # rewrite transitions
-        for actual, next_state in self._transitions.items():
-            self._transitions[actual] = {"".join(sorted(next_state))}
+                self._determinize_state(reachable)
 
     def is_deterministic(self) -> bool:
         for transition in self._transitions.values():
@@ -278,7 +277,7 @@ class NFA():
         self._transitions = {
             (beautiful_states[actual_state], symbol):
             {beautiful_states[state] for state in value}
-                for (actual_state, symbol), value in self._transitions.items()
+            for (actual_state, symbol), value in self._transitions.items()
         }
 
         self._final_states = {
