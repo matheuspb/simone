@@ -94,7 +94,7 @@ class TestRG(unittest.TestCase):
             })
 
     def test_rg_to_nfa_conversion(self) -> None:
-        grammar = RegularGrammar("S", {"S": "&"})
+        grammar = RegularGrammar("S", {"S": {"&"}})
         nfa = NFA.from_regular_grammar(grammar)
         self.assertTrue(nfa.accept(""))
 

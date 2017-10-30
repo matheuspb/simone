@@ -103,7 +103,7 @@ class NFA():
         while not new_reachable <= reachable:
             reachable |= new_reachable
             new_reachable_copy = new_reachable.copy()
-            new_reachable = set()  # type: Set[str]
+            new_reachable = set()
             for state in new_reachable_copy:
                 for symbol in self._alphabet:
                     new_reachable.update(
@@ -118,7 +118,7 @@ class NFA():
         new_alive = self._final_states.copy()
         while not new_alive <= alive:
             alive |= new_alive
-            new_alive = set()  # type: Set[str]
+            new_alive = set()
             for (state, _), next_states in self._transitions.items():
                 if any(next_state in alive for next_state in next_states):
                     new_alive.add(state)
