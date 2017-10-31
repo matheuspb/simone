@@ -87,6 +87,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def _test_emptiness(self) -> None:
         if self._nfa.is_empty():
             self.statusbar.showMessage("The language is empty.")
+        elif self._nfa.is_finite():
+            self.statusbar.showMessage("The language is finite.")
+        else:
+            self.statusbar.showMessage("The language is infinite.")
 
     def _remove_unreachable(self) -> None:
         self._nfa.remove_unreachable()
@@ -160,6 +164,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             QMessageBox.information(self, "Error", error.args[0])
             self.transitionTable.item(row, col).setText("")
 
+        self._test_emptiness()
+
     def _update_table(self) -> None:
         states = []
         for state in self._nfa.states():
@@ -185,7 +191,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     if (state, symbol) in table else ""
                 self.transitionTable.setItem(
                     i, j, QTableWidgetItem(transition))
-        self._test_emptiness()
 
     def _update_grammar_text(self) -> None:
         """
