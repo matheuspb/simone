@@ -48,7 +48,7 @@ class TestNFA(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             nfa = NFA.load("examples/endsWbb.json")
             nfa.minimize()
-    
+
     def test_emptiness(self) -> None:
         nfa = NFA.load("examples/one1.json")
         self.assertFalse(nfa.is_empty())
