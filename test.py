@@ -49,6 +49,16 @@ class TestNFA(unittest.TestCase):
             nfa = NFA.load("examples/endsWbb.json")
             nfa.minimize()
 
+    def test_emptiness(self) -> None:
+        nfa = NFA.load("examples/one1.json")
+        self.assertFalse(nfa.is_empty())
+        self.assertFalse(nfa.is_finite())
+        nfa = NFA.load("examples/aa.json")
+        self.assertFalse(nfa.is_empty())
+        self.assertTrue(nfa.is_finite())
+        nfa = NFA.load("examples/empty.json")
+        self.assertTrue(nfa.is_empty())
+
     def test_determinization(self) -> None:
         nfa = NFA.load("examples/endsWbb.json")
         self.assertFalse(nfa.is_deterministic())

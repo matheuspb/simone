@@ -1,0 +1,27 @@
+{
+    "states": [
+        "S"
+    ],
+    "alphabet": [
+        "a",
+        "b"
+    ],
+    "transitions": [
+        [
+            "S",
+            "a",
+            [
+                "S"
+            ]
+        ],
+        [
+            "S",
+            "b",
+            [
+                "S"
+            ]
+        ]
+    ],
+    "initial_state": "S",
+    "final_states": []
+}
