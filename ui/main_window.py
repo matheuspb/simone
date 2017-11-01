@@ -6,7 +6,7 @@ from tools.grammar import RegularGrammar
 from PyQt5.QtWidgets import (
     QMainWindow, QTableWidgetItem, QInputDialog, QMessageBox, QFileDialog)
 
-GRAMMAR_PATTERN = re.compile(r"^[A-Z]'?->[a-z&][A-Z]?(\|[a-z&][A-Z]?)*$")
+GRAMMAR_PATTERN = re.compile(r"^[A-Z]'?->[a-z0-9&][A-Z]?(\|[a-z0-9&][A-Z]?)*$")
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):

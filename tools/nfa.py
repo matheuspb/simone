@@ -90,7 +90,7 @@ class NFA():
             raise KeyError("State(s) {} do not exist".format(states))
 
     def minimize(self) -> None:
-        if not self._is_deterministic():
+        if not self.is_deterministic():
             raise RuntimeError("Automata is non-deterministic")
 
         self.remove_unreachable()
@@ -110,16 +110,21 @@ class NFA():
                     new_reachable.update(
                         self._transitions.get((state, symbol), set()))
 
-        unreachable_states = self._states - reachable
-        for unreachable_state in unreachable_states:
+        for unreachable_state in self._states - reachable:
             self.remove_state(unreachable_state)
 
     def remove_dead(self) -> None:
         """ Removes states that never reach a final state """
-        # assumes all unreachable states were removed
-        alive_states = self._final_states.copy()
-        self._is_alive(self._initial_state, alive_states, set())
-        for dead_state in self._states - alive_states:
+        alive = set()  # type: Set[str]
+        new_alive = self._final_states.copy()
+        while not new_alive <= alive:
+            alive |= new_alive
+            new_alive = set()
+            for (state, _), next_states in self._transitions.items():
+                if any(next_state in alive for next_state in next_states):
+                    new_alive.add(state)
+
+        for dead_state in self._states - alive:
             self.remove_state(dead_state)
 
     def is_empty(self) -> bool:
@@ -160,29 +165,8 @@ class NFA():
 
         return self._has_recursion(to_visit, visited)
 
-    def _is_alive(
-            self, state: str, alive: Set[str], visited: Set[str]) -> bool:
-        """
-            Uses the recursive definition of alive state, that is, if you can
-            reach an alive state from the state, it is alive. The initial set
-            of alive states are the final states.
-
-            The visited set is used just to avoid an infinite recursion.
-        """
-        if state not in visited:
-            visited.add(state)
-            reachable_states = set()  # type: Set[str]
-            for symbol in self._alphabet:
-                reachable_states.update(
-                    self._transitions.get((state, symbol), set()))
-            for reachable_state in reachable_states:
-                if self._is_alive(reachable_state, alive, visited):
-                    alive.add(state)
-
-        return state in alive
-
     def merge_equivalent(self) -> None:
-        if not self._is_deterministic():
+        if not self.is_deterministic():
             raise RuntimeError("Automata is non-deterministic")
 
         undistinguishable = set()  # pairs of undistinguishable states
@@ -251,7 +235,7 @@ class NFA():
             next_state = set()
             for state in current_state:
                 next_state.update(
-                        self._transitions.get((state, symbol), set()))
+                    self._transitions.get((state, symbol), set()))
             current_state = next_state
 
         return bool(current_state.intersection(self._final_states))
@@ -268,8 +252,22 @@ class NFA():
                 found.update(self._transitions[state, symbol])
         return found
 
-    def _determinize_state(
-            self, actual: Tuple[str, str], states_set: Set[str]) -> None:
+    def determinize(self) -> None:
+        """
+            Given the actual NFA, determinizes it, appending the new
+            transitions and states to the actual ones of the NFA.
+        """
+        original_transitions = self._transitions.copy()
+
+        # create necessary states
+        for actual, next_state in original_transitions.items():
+            self._determinize_state(next_state)
+
+        # rewrite transitions
+        for actual, next_state in self._transitions.items():
+            self._transitions[actual] = {"".join(sorted(next_state))}
+
+    def _determinize_state(self, states_set: Set[str]) -> None:
         """
             For a given set of states, verify whether they pertains to the
             actual states of the FA. In negative case, add it and insert
@@ -283,26 +281,11 @@ class NFA():
             for symbol in self._alphabet:
                 reachable = self._find_reachable(states_set, symbol)
                 self._transitions[name, symbol] = reachable
-                self._determinize_state((name, symbol), reachable)
+                self._determinize_state(reachable)
 
-    def determinize(self) -> None:
-        """
-            Given the actual NFA, determinizes it, appending the new
-            transitions and states to the actual ones of the NFA.
-        """
-        original_transitions = self._transitions.copy()
-
-        # create necessary states
-        for actual, next_state in original_transitions.items():
-            self._determinize_state(actual, next_state)
-
-        # rewrite transitions
-        for actual, next_state in self._transitions.items():
-            self._transitions[actual] = {"".join(sorted(next_state))}
-
-    def _is_deterministic(self) -> bool:
-        for key, value in self._transitions.items():
-            if len(value) > 1:
+    def is_deterministic(self) -> bool:
+        for transition in self._transitions.values():
+            if len(transition) > 1:
                 return False
         return True
 
@@ -333,14 +316,13 @@ class NFA():
         self._transitions = {
             (beautiful_states[actual_state], symbol):
             {beautiful_states[state] for state in value}
-                for (actual_state, symbol), value in self._transitions.items()
+            for (actual_state, symbol), value in self._transitions.items()
         }
 
         self._final_states = {
             beautiful_states[state] for state in self._final_states
         }
 
-    # TODO unit tests
     @staticmethod
     def from_regular_grammar(grammar):
         initial_symbol = grammar.initial_symbol()
