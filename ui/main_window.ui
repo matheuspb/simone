@@ -103,6 +103,18 @@
                 </property>
                </spacer>
               </item>
+              <item>
+               <widget class="QLabel" name="languageLabel">
+                <property name="font">
+                 <font>
+                  <pointsize>10</pointsize>
+                 </font>
+                </property>
+                <property name="text">
+                 <string/>
+                </property>
+               </widget>
+              </item>
              </layout>
             </item>
            </layout>
@@ -224,7 +236,13 @@
    <addaction name="menuFile"/>
    <addaction name="menuTransformations"/>
   </widget>
-  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QStatusBar" name="statusbar">
+   <property name="font">
+    <font>
+     <pointsize>10</pointsize>
+    </font>
+   </property>
+  </widget>
   <action name="actionOpen">
    <property name="text">
     <string>Open</string>

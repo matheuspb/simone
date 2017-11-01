@@ -86,11 +86,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def _test_emptiness(self) -> None:
         if self._nfa.is_empty():
-            self.statusbar.showMessage("The language is empty.")
+            self.languageLabel.setText("The language is empty.")
         elif self._nfa.is_finite():
-            self.statusbar.showMessage("The language is finite.")
+            self.languageLabel.setText("The language is finite.")
         else:
-            self.statusbar.showMessage("The language is infinite.")
+            self.languageLabel.setText("The language is infinite.")
 
     def _remove_unreachable(self) -> None:
         self._nfa.remove_unreachable()
