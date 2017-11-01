@@ -19,13 +19,17 @@ class NFA():
         self._final_states = final_states if final_states else set()
 
     @property
-    def transition_table(self) -> Dict[Tuple[str, str], Set[str]]:
-        return self._transitions
-
-    @property
     def states(self) -> List[str]:
         return [self._initial_state] + \
             sorted(self._states - {self._initial_state})
+
+    @property
+    def alphabet(self) -> List[str]:
+        return sorted(self._alphabet)
+
+    @property
+    def transition_table(self) -> Dict[Tuple[str, str], Set[str]]:
+        return self._transitions
 
     @property
     def initial_state(self) -> str:
@@ -34,20 +38,6 @@ class NFA():
     @property
     def final_states(self) -> Set[str]:
         return self._final_states
-
-    @property
-    def alphabet(self) -> List[str]:
-        return sorted(self._alphabet)
-
-    def add_symbol(self, symbol: str) -> None:
-        self._alphabet.add(symbol)
-
-    def remove_symbol(self, symbol: str) -> None:
-        self._alphabet.discard(symbol)
-        for state in self._states:
-            # remove transitions by the removed symbol
-            if (state, symbol) in self._transitions:
-                del self._transitions[state, symbol]
 
     def add_state(self, state: str) -> None:
         if not self._initial_state:
@@ -82,6 +72,16 @@ class NFA():
             else:
                 self._final_states.add(state)
 
+    def add_symbol(self, symbol: str) -> None:
+        self._alphabet.add(symbol)
+
+    def remove_symbol(self, symbol: str) -> None:
+        self._alphabet.discard(symbol)
+        for state in self._states:
+            # remove transitions by the removed symbol
+            if (state, symbol) in self._transitions:
+                del self._transitions[state, symbol]
+
     def set_transition(
             self, state: str, symbol: str, next_states: Set[str]) -> None:
         if not next_states:
@@ -92,6 +92,22 @@ class NFA():
         else:
             states = ", ".join(next_states - self._states)
             raise KeyError("State(s) {} do not exist".format(states))
+
+    def accept(self, string: str) -> bool:
+        """
+            Checks if a given string is member of the language recognized by
+            the NFA. Using non-deterministic transitions.
+        """
+        current_state = {self._initial_state}
+
+        for symbol in string:
+            next_state = set()  # type Set[str]
+            for state in current_state:
+                next_state.update(
+                    self._transitions.get((state, symbol), set()))
+            current_state = next_state
+
+        return bool(current_state.intersection(self._final_states))
 
     def minimize(self) -> None:
         if not self.is_deterministic():
@@ -135,7 +151,8 @@ class NFA():
         if not self.is_deterministic():
             raise RuntimeError("Automata is non-deterministic")
 
-        undistinguishable = set()  # pairs of undistinguishable states
+        # pairs of undistinguishable states
+        undistinguishable = set()  # type: Set[FrozenSet[str]]
 
         # initially, you can't distinguish final and non-final states
         for pair in combinations(self._states - self._final_states, 2):
@@ -190,34 +207,6 @@ class NFA():
                 self._transitions[actual_state] = {state_to_be_kept}
         self.remove_state(state_to_be_removed)
 
-    def accept(self, string: str) -> bool:
-        """
-            Checks if a given string is member of the language recognized by
-            the NFA. Using non-deterministic transitions.
-        """
-        current_state = set([self._initial_state])
-
-        for symbol in string:
-            next_state = set()
-            for state in current_state:
-                next_state.update(
-                    self._transitions.get((state, symbol), set()))
-            current_state = next_state
-
-        return bool(current_state.intersection(self._final_states))
-
-    def _find_reachable(self, states: Set[str], symbol: str) -> Set[str]:
-        """
-            Given a set of states, applies a depth search algorithm
-            to find the reachable states of them through transitions of the
-            given symbol
-        """
-        found = set()  # type: Set[str]
-        for state in states:
-            if (state, symbol) in self._transitions:
-                found.update(self._transitions[state, symbol])
-        return found
-
     def determinize(self) -> None:
         """
             Given the actual NFA, determinizes it, appending the new
@@ -249,17 +238,29 @@ class NFA():
                 self._transitions[name, symbol] = reachable
                 self._determinize_state(reachable)
 
+    def _find_reachable(self, states: Set[str], symbol: str) -> Set[str]:
+        """
+            Given a set of states, applies a depth search algorithm
+            to find the reachable states of them through transitions of the
+            given symbol
+        """
+        found = set()  # type: Set[str]
+        for state in states:
+            if (state, symbol) in self._transitions:
+                found.update(self._transitions[state, symbol])
+        return found
+
     def is_deterministic(self) -> bool:
-        for transition in self._transitions.values():
-            if len(transition) > 1:
-                return False
-        return True
+        return all(len(transition) == 1
+            for transition in self._transitions.values())
 
     def beautify_qn(self) -> None:
         beautiful_states = {self._initial_state: "q0"}
-        for n, state in enumerate(sorted(
-                self._states - {self._initial_state})):
-            beautiful_states[state] = "q" + str(n + 1)
+
+        beautiful_states.update({state: "q" + str(number + 1) \
+            for number, state in
+            enumerate(sorted(self._states - {self._initial_state}))})
+
         self._beautify(beautiful_states)
 
     def beautify_abc(self) -> None:
@@ -267,12 +268,12 @@ class NFA():
             raise RuntimeError("Too many states")
 
         beautiful_states = {self._initial_state: "S"}
-        n = 0
+        number = 0
         for state in sorted(self._states - {self._initial_state}):
-            beautiful_states[state] = chr(ord('A') + n)
-            if n == 17:  # skip "S", the initial state
-                n += 1
-            n += 1
+            beautiful_states[state] = chr(ord('A') + number)
+            if number == 17:  # skip "S", the initial state
+                number += 1
+            number += 1
         self._beautify(beautiful_states)
 
     def _beautify(self, beautiful_states: Dict[str, str]) -> None:
