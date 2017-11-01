@@ -2,6 +2,7 @@ import unittest
 from typing import Set
 from tools.nfa import NFA
 from tools.grammar import RegularGrammar
+from tools.regex import regex_to_dfa
 
 
 class TestNFA(unittest.TestCase):
@@ -25,14 +26,14 @@ class TestNFA(unittest.TestCase):
     def test_minimization(self) -> None:
         nfa = NFA.load("examples/bdiv3.json")
         nfa.minimize()
-        self.assertEqual(len(nfa.states()), 3)
+        self.assertEqual(len(nfa.states), 3)
         true_cases = {"", "aa", "bbb", "abababa", "aaaaabbaababaaabb"}
         false_cases = {"ba", "bbaaa", "ababababa", "bbaaabb", "babbaaabba"}
         self.nfa_test(nfa, true_cases, false_cases)
 
         nfa = NFA.load("examples/one1.json")
         nfa.minimize()
-        self.assertEqual(len(nfa.states()), 2)
+        self.assertEqual(len(nfa.states), 2)
         true_cases = {"1", "01", "10", "000000000100000"}
         false_cases = {"", "0", "00", "11", "111", "0100001", "1000001"}
         self.nfa_test(nfa, true_cases, false_cases)
@@ -40,7 +41,7 @@ class TestNFA(unittest.TestCase):
         nfa = NFA.load("examples/div5.json")
         nfa.determinize()
         nfa.minimize()
-        self.assertEqual(len(nfa.states()), 6)
+        self.assertEqual(len(nfa.states), 6)
         true_cases = {"0", "101", "1000101011"}
         false_cases = {"", "1", "101010111", "11101010"}
         self.nfa_test(nfa, true_cases, false_cases)
@@ -71,9 +72,9 @@ class TestNFA(unittest.TestCase):
 
     def test_dead_removal(self) -> None:
         nfa = NFA.load("examples/one1.json")
-        self.assertTrue(nfa.states(), set(['A', 'B', 'C', 'D', 'E', 'F']))
+        self.assertTrue(nfa.states, set(['A', 'B', 'C', 'D', 'E', 'F']))
         nfa.remove_dead()
-        self.assertTrue(nfa.states(), set(['A', 'B', 'C', 'D', 'E']))
+        self.assertTrue(nfa.states, set(['A', 'B', 'C', 'D', 'E']))
 
 
 class TestRG(unittest.TestCase):
@@ -130,6 +131,21 @@ class TestRG(unittest.TestCase):
         true_cases = {"", "abab", "caca", "abcabbbacb"}
         false_cases = {"aa", "cc", "bbb", "babcb"}
         test_nfa.nfa_test(nfa, true_cases, false_cases)
+
+class TestRegex(unittest.TestCase):
+
+    def test_regex_to_dfa(self) -> None:
+        regex = "1?(01)*0?"
+        automata = regex_to_dfa(regex)
+        self.assertEqual(automata.states, ['q0', 'q1', 'q2'])
+        self.assertEqual(automata.initial_state, 'q0')
+        self.assertEqual(automata.final_states, set(['q0', 'q1', 'q2']))
+        regex = "(a(ba)*a|ba)*(ab)*"
+        automata = regex_to_dfa(regex)
+        self.assertEqual(automata.states, ['q0', 'q1', 'q2', 'q3'])
+        self.assertEqual(automata.initial_state, 'q0')
+        self.assertEqual(automata.final_states, set(['q0', 'q3']))
+        
 
 if __name__ == "__main__":
     unittest.main()

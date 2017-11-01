@@ -18,19 +18,24 @@ class NFA():
         self._initial_state = initial_state
         self._final_states = final_states if final_states else set()
 
+    @property
     def transition_table(self) -> Dict[Tuple[str, str], Set[str]]:
         return self._transitions
 
+    @property
     def states(self) -> List[str]:
         return [self._initial_state] + \
             sorted(self._states - {self._initial_state})
 
+    @property
     def initial_state(self) -> str:
         return self._initial_state
 
+    @property
     def final_states(self) -> Set[str]:
         return self._final_states
 
+    @property
     def alphabet(self) -> List[str]:
         return sorted(self._alphabet)
 

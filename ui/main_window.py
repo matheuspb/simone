@@ -152,8 +152,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             QMessageBox.information(self, "Error", error.args[0])
 
     def _update_nfa(self, row: int, col: int) -> None:
-        states = self._nfa.states()
-        alphabet = self._nfa.alphabet()
+        states = self._nfa.states
+        alphabet = self._nfa.alphabet
         next_states = \
             set(self.transitionTable.item(row, col).text().replace(
                 " ", "").split(","))
@@ -168,15 +168,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def _update_table(self) -> None:
         states = []
-        for state in self._nfa.states():
+        for state in self._nfa.states:
             preffix = ""
-            if state in self._nfa.final_states():
+            if state in self._nfa.final_states:
                 preffix += "*"
-            if state == self._nfa.initial_state():
+            if state == self._nfa.initial_state:
                 preffix += "->"
             states.append(preffix + state)
 
-        alphabet = self._nfa.alphabet()
+        alphabet = self._nfa.alphabet
 
         self.transitionTable.setRowCount(len(states))
         self.transitionTable.setVerticalHeaderLabels(states)
@@ -184,8 +184,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.transitionTable.setColumnCount(len(alphabet))
         self.transitionTable.setHorizontalHeaderLabels(alphabet)
 
-        table = self._nfa.transition_table()
-        for i, state in enumerate(self._nfa.states()):
+        table = self._nfa.transition_table
+        for i, state in enumerate(self._nfa.states):
             for j, symbol in enumerate(alphabet):
                 transition = ",".join(sorted(table[state, symbol])) \
                     if (state, symbol) in table else ""
