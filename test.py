@@ -6,6 +6,7 @@ from tools.regex import regex_to_dfa
 
 
 class TestNFA(unittest.TestCase):
+    """ Tests NFA transformations """
 
     def nfa_test(self, nfa: NFA, true_cases: Set[str], false_cases: Set[str]) \
             -> None:
@@ -78,6 +79,7 @@ class TestNFA(unittest.TestCase):
 
 
 class TestRG(unittest.TestCase):
+    """ Tests NFA <-> regular grammar conversions """
 
     def test_nfa_to_rg_conversion(self) -> None:
         grammar = RegularGrammar.from_nfa(NFA.load("examples/div3.json"))
@@ -132,20 +134,30 @@ class TestRG(unittest.TestCase):
         false_cases = {"aa", "cc", "bbb", "babcb"}
         test_nfa.nfa_test(nfa, true_cases, false_cases)
 
+
 class TestRegex(unittest.TestCase):
+    """ Tests the regular expression to DFA conversion """
 
     def test_regex_to_dfa(self) -> None:
-        regex = "1?(01)*0?"
-        automata = regex_to_dfa(regex)
-        self.assertEqual(automata.states, ['q0', 'q1', 'q2'])
-        self.assertEqual(automata.initial_state, 'q0')
-        self.assertEqual(automata.final_states, set(['q0', 'q1', 'q2']))
-        regex = "(a(ba)*a|ba)*(ab)*"
-        automata = regex_to_dfa(regex)
-        self.assertEqual(automata.states, ['q0', 'q1', 'q2', 'q3'])
-        self.assertEqual(automata.initial_state, 'q0')
-        self.assertEqual(automata.final_states, set(['q0', 'q3']))
-        
+        test_nfa = TestNFA()
+
+        automata = regex_to_dfa("1?(01)*0?")
+        self.assertTrue(automata.is_deterministic())
+        test_nfa.nfa_test(
+            automata,
+            {"", "0", "1", "0101", "10101"},
+            {"11", "00", "1010100", "010110101"})
+
+        automata = regex_to_dfa("(a(ba)*a|ba)*(ab)*")
+        self.assertTrue(automata.is_deterministic())
+        test_nfa.nfa_test(
+            automata,
+            {"", "aa", "ab", "ba", "aaaa", "baaaab", "aabaababaaba"},
+            {"a", "b", "bb", "aabbaa", "ababa", "baaab"})
+
+        automata = regex_to_dfa("")
+        self.assertTrue(automata.is_deterministic())
+        test_nfa.nfa_test(automata, {""}, {"a", "ahgsdkjahsg"})
 
 if __name__ == "__main__":
     unittest.main()

@@ -175,6 +175,9 @@ def regex_to_dfa(regex: str) -> NFA:
     root = RegExpParser(regex).parse()
     thread_tree(root)
 
+    if root is None:
+        return NFA({"q0"}, set(), {}, "q0", {"q0"})
+
     alphabet = set()  # type: Set[str]
     transitions = {}  # type: Dict[Tuple[str, str], Set[str]]
     initial_state = "q0"
