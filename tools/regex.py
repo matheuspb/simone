@@ -1,4 +1,8 @@
-from typing import List
+from typing import Dict, List, Set
+from tools.nfa import NFA
+
+END = "$"
+OPERATORS = {"|", ".", "*", "?"}
 
 
 class Node():
@@ -17,6 +21,55 @@ class Node():
 
     def __str__(self):
         return self.symbol + str(self.label)
+
+    def __eq__(self, other):
+        if other is None:
+            return False
+        return self.symbol == other.symbol and self.label == other.label
+
+    def __hash__(self):
+        return hash(self.label)
+
+    def down(self, visited=None):
+        if visited is None:
+            visited = set()
+
+        if self in visited:
+            return {self} if self.symbol not in OPERATORS else set()
+
+        visited.add(self)
+        if self.symbol == "|":
+            return self.left.down(visited) | self.right.down(visited)
+        elif self.symbol == ".":
+            return self.left.down(visited)
+        elif self.symbol == "*" or self.symbol == "?":
+            return self.left.down(visited) | self.right.up(visited)
+        return {self}
+
+    def up(self, visited=None):
+        if visited is None:
+            visited = set()
+
+        if self.symbol == '|':
+            # skip the whole right sub tree
+            node = self.right
+            while node.symbol == '.' or node.symbol == '|':
+                node = node.right
+            return node.right.up(visited)
+        elif self.symbol == ".":
+            return self.right.down(visited)
+        elif self.symbol == "*":
+            return self.left.down(visited) | self.right.up(visited)
+        elif self.symbol == "?":
+            return self.right.up(visited)
+        elif self.symbol == END:
+            return {self}
+        else:
+            raise RuntimeError(
+                "Going up on invalid Node {}".format(self.symbol))
+
+
+END_NODE = Node(END, None, None, 0)
 
 
 class RegExpParser():
@@ -108,20 +161,53 @@ def thread_tree(root: Node) -> None:
         else:
             node = stack.pop()
             if node.right is None:
-                node.right = stack[-1] if stack else Node("$", None, None, 0)
+                node.right = stack[-1] if stack else END_NODE
                 node = None
             else:
                 node = node.right
 
 
-def traverse(root: Node) -> None:
-    """ Sample method that traverses the threaded tree in order """
-    visited = {root.symbol}
-    node = root
-    while node.symbol != "$":
-        if node.left and node.left not in visited:
-            visited.add(node.left)
-            node = node.left
-        else:
-            print(node)
-            node = node.right
+def regex_to_dfa(regex: str) -> NFA:
+    """
+        Transforms a regular expression into a DFA using the De Simone/Aho
+        method.
+    """
+    parser = RegExpParser(regex)
+    root = parser.parse()
+    thread_tree(root)
+
+    alphabet = set()
+    transitions = {}
+    initial_state = "q0"
+    final_states = set()
+    states = {initial_state}
+
+    initial_nodes = root.down()
+    compositions = {initial_state: initial_nodes}
+    if END_NODE in compositions[initial_state]:
+        final_states.add(initial_state)
+
+    new_states = {initial_state}
+    while new_states:
+        symbols = {}  # type: Dict[str, Set[Node]]
+        state = new_states.pop()
+        for node in compositions[state]:
+            if node.symbol != END:
+                symbols.setdefault(node.symbol, set()).add(node)
+        for symbol, nodes in symbols.items():
+            alphabet.add(symbol)
+            new_state = "q" + str(len(states))
+            new_state_composition = set()  # type: Set[Node]
+            for node in nodes:
+                new_state_composition.update(node.right.up())
+            for s, comp in compositions.items():
+                if new_state_composition == comp:
+                    new_state = s
+            if new_state not in states:
+                states.add(new_state)
+                new_states.add(new_state)
+                compositions[new_state] = new_state_composition
+                if END_NODE in new_state_composition:
+                    final_states.add(new_state)
+            transitions[state, symbol] = {new_state}
+    return NFA(states, alphabet, transitions, initial_state, final_states)
