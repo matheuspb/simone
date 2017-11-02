@@ -39,21 +39,21 @@ class RegularGrammar():
             Returns a regular grammar that generates the language of the given
             NFA
         """
-        initial_symbol = nfa.initial_state()
+        initial_symbol = nfa.initial_state
         productions = {}  # type: Dict[str, Set[str]]
 
         # if delta(A, a) = B, then add the production A -> aB to the grammar
         # if B is a final state of the NFA then also add A -> a
-        for k, states in nfa.transition_table().items():
+        for k, states in nfa.transition_table.items():
             for state in states:
                 if k[0] not in productions:
                     productions[k[0]] = set()
                 productions[k[0]].add(k[1] + state)
-                if state in nfa.final_states():
+                if state in nfa.final_states:
                     productions[k[0]].add(k[1])
 
         # if the NFA accepts epsilon, add epsilon to the grammar
-        if nfa.initial_state() in nfa.final_states():
+        if nfa.initial_state in nfa.final_states:
             new_initial_symbol = initial_symbol + "'"
             productions[new_initial_symbol] = \
                 productions.get(initial_symbol, set()) | {"&"}

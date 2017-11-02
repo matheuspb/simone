@@ -24,6 +24,9 @@ class Ui_MainWindow(object):
         self.regexInput = QtWidgets.QLineEdit(self.centralwidget)
         self.regexInput.setObjectName("regexInput")
         self.horizontalLayout_1.addWidget(self.regexInput)
+        self.regexToDFAButton = QtWidgets.QPushButton(self.centralwidget)
+        self.regexToDFAButton.setObjectName("regexToDFAButton")
+        self.horizontalLayout_1.addWidget(self.regexToDFAButton)
         self.verticalLayout_3.addLayout(self.horizontalLayout_1)
         self.verticalLayout_1 = QtWidgets.QVBoxLayout()
         self.verticalLayout_1.setObjectName("verticalLayout_1")
@@ -168,6 +171,7 @@ class Ui_MainWindow(object):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "Automata Editor"))
         self.regexLabel.setText(_translate("MainWindow", "Regular Expression:"))
+        self.regexToDFAButton.setText(_translate("MainWindow", "To DFA"))
         self.addSymbolButton.setText(_translate("MainWindow", "Add Symbols"))
         self.addStateButton.setText(_translate("MainWindow", "Add States"))
         self.removeSymbolButton.setText(_translate("MainWindow", "Remove Symbol"))
