@@ -139,7 +139,7 @@ class NFA():
 
     def is_finite(self) -> bool:
         """ Checks if the language defined by the automata is finite """
-        return not self._has_recursion(deque(self._initial_state), set())
+        return not self._has_recursion(deque([self._initial_state]), set())
 
     def _has_recursion(self, to_visit: Deque[str], visited: Set[str]) -> bool:
         """
