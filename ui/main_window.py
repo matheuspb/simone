@@ -202,6 +202,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.transitionTable.setItem(
                     i, j, QTableWidgetItem(transition))
 
+        self._test_emptiness()
+
     def _update_grammar_text(self) -> None:
         """
             "B", {"aB", "bC", "a"} turns into
