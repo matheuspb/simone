@@ -329,6 +329,21 @@ class NFA():
             beautiful_states[state] for state in self._final_states
         }
 
+    def complement(self) -> None:
+        self.determinize()
+        self.beautify_abc()
+        self._explicit_dead_transitions()
+        for state in self._states:
+            self.toggle_final_state(state)
+
+    def _explicit_dead_transitions(self) -> None:
+        new_state = chr(ord(sorted(self._states)[-1]) + 1)
+        self.add_state(new_state)
+        for state in self._states:
+            for symbol in self._alphabet:
+                if (state, symbol) not in self._transitions:
+                    self._transitions[state, symbol] = new_state
+
     @staticmethod
     def from_regular_grammar(grammar):
         initial_symbol = grammar.initial_symbol()

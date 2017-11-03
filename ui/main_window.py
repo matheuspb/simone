@@ -47,6 +47,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.action_to_abc.triggered.connect(self._beautify_abc)
         self.action_to_qn.triggered.connect(self._beautify_qn)
 
+        self.actionUnion.triggered.connect(self._union)
+        self.actionComplement.triggered.connect(self._complement)
+        self.actionIntersection.triggered.connect(self._intersection)
+
         self.transitionTable.cellChanged.connect(self._update_nfa)
 
         self._grammar = RegularGrammar()
@@ -158,6 +162,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self._update_table()
         except RuntimeError as error:
             QMessageBox.information(self, "Error", error.args[0])
+
+    def _union(self) -> None:
+        pass
+
+    def _complement(self) -> None:
+        self._nfa.complement()
+        self._update_table()
+
+    def _intersection(self) -> None:
+        pass
 
     def _update_nfa(self, row: int, col: int) -> None:
         states = self._nfa.states
