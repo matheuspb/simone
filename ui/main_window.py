@@ -164,14 +164,28 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             QMessageBox.information(self, "Error", error.args[0])
 
     def _union(self) -> None:
-        pass
+        try:
+            path, _ = QFileDialog.getOpenFileName(self)
+            if path:
+                second_nfa = NFA.load(path)
+                self._nfa.union(second_nfa)
+                self._update_table()
+        except RuntimeError as error:
+            QMessageBox.information(self, "Error", error.args[0])
 
     def _complement(self) -> None:
         self._nfa.complement()
         self._update_table()
 
     def _intersection(self) -> None:
-        pass
+        try:
+            path, _ = QFileDialog.getOpenFileName(self)
+            if path:
+                second_nfa = NFA.load(path)
+                self._nfa.intersection(second_nfa)
+                self._update_table()
+        except RuntimeError as error:
+            QMessageBox.information(self, "Error", error.args[0])
 
     def _update_nfa(self, row: int, col: int) -> None:
         states = self._nfa.states

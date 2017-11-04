@@ -329,12 +329,59 @@ class NFA():
             beautiful_states[state] for state in self._final_states
         }
 
+    def union(self, automata: 'NFA') -> None:
+        """
+            Makes the union of two automatas, without epsilon transitions,
+            and saves it on the actual object.
+        """
+        if self.alphabet != automata.alphabet:
+            raise RuntimeError("The alphabets are different!")
+
+        self.beautify_abc()
+        automata.beautify_qn()
+        
+        first_initial = self._initial_state
+        second_initial = automata.initial_state
+
+        new_state = chr(ord(sorted(self._states)[-1]) + 1)
+        self.add_state(new_state)
+        self._initial_state = new_state
+
+        # Merge states
+        self._states.update(automata.states)
+        self._final_states.update(automata.final_states)
+        self._transitions.update(automata.transition_table)
+
+        # Creates a new initial state
+        for symbol in self._alphabet:
+            new_transition = set()
+            first_transition = self._transitions.get((first_initial, symbol))
+            second_transition = automata.transition_table.get(
+                    (second_initial, symbol))
+            new_transition.update(
+                    set() if first_transition == None else first_transition)
+            new_transition.update(
+                    set() if second_transition == None else second_transition)
+            self._transitions[new_state, symbol] = new_transition
+
+        self.beautify_qn()
+
     def complement(self) -> None:
+        """
+            Finds the AF which recognizes the language that is the complement
+            of the actual AF.
+        """
         self.determinize()
         self.beautify_abc()
         self._explicit_dead_transitions()
         for state in self._states:
             self.toggle_final_state(state)
+
+    def intersection(self, automata: 'NFA') -> None:
+        automata.complement()
+        self.complement()
+        self.union(automata)
+        self.complement()
 
     def _explicit_dead_transitions(self) -> None:
         new_state = chr(ord(sorted(self._states)[-1]) + 1)
