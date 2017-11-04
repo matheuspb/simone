@@ -1,5 +1,6 @@
 from typing import Dict, List, Set, Tuple
 from tools.nfa import NFA
+from functools import lru_cache
 
 END = "$"
 OPERATORS = {"|", ".", "*", "?"}
@@ -30,14 +31,15 @@ class Node():
     def __hash__(self):
         return hash(self.label)
 
+    @lru_cache(maxsize=128)
     def down(self, visited=None):
         if visited is None:
-            visited = set()
+            visited = frozenset()
 
         if self in visited:
             return {self} if self.symbol not in OPERATORS else set()
 
-        visited.add(self)
+        visited |= {self}
         if self.symbol == "|":
             return self.left.down(visited) | self.right.down(visited)
         elif self.symbol == ".":
@@ -46,9 +48,10 @@ class Node():
             return self.left.down(visited) | self.right.up(visited)
         return {self}
 
+    @lru_cache(maxsize=128)
     def up(self, visited=None):
         if visited is None:
-            visited = set()
+            visited = frozenset()
 
         if self.symbol == '|':
             # skip the whole right sub tree
@@ -224,4 +227,6 @@ def regex_to_dfa(regex: str) -> NFA:
 
             transitions[state, symbol] = {new_state}
 
+    Node.up.cache_clear()
+    Node.down.cache_clear()
     return NFA(states, alphabet, transitions, initial_state, final_states)
