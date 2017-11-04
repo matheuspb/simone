@@ -1,6 +1,6 @@
-from typing import Dict, List, Set, Tuple
-from tools.nfa import NFA
+from typing import Any, Dict, FrozenSet, List, Set, Tuple
 from functools import lru_cache
+from tools.nfa import NFA
 
 END = "$"
 OPERATORS = {"|", ".", "*", "?"}
@@ -32,7 +32,8 @@ class Node():
         return hash(self.label)
 
     @lru_cache(maxsize=128)
-    def down(self, visited=None):
+    def down(self, visited: FrozenSet[Any]=None) -> Set[Any]:
+        """ Returns the set of reachable nodes by going down on this node """
         if visited is None:
             visited = frozenset()
 
@@ -49,7 +50,8 @@ class Node():
         return {self}
 
     @lru_cache(maxsize=128)
-    def up(self, visited=None):
+    def up(self, visited: FrozenSet[Any]=None) -> Set[Any]:
+        """ Returns the set of reachable nodes by going up on this node """
         if visited is None:
             visited = frozenset()
 
