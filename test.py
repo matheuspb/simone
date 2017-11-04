@@ -90,6 +90,26 @@ class TestNFA(unittest.TestCase):
         nfa.remove_dead()
         self.assertTrue(nfa.states, set(['A', 'B', 'C', 'D', 'E']))
 
+    def test_union(self) -> None:
+        first_nfa = NFA.load("examples/aa.json")
+        second_nfa = NFA.load("examples/endsWbb.json")
+
+        first_nfa.union(second_nfa)
+        self.assertTrue(first_nfa.accept("aa"))
+        self.assertTrue(first_nfa.accept("abb"))
+        self.assertTrue(first_nfa.accept("abbaabb"))
+        self.assertFalse(first_nfa.accept("abbaab"))
+        self.assertFalse(first_nfa.accept("ab"))
+        self.assertFalse(first_nfa.accept("aaa"))
+
+    def test_complement(self) -> None:
+        nfa = NFA.load("examples/endsWbb.json")
+
+        nfa.complement()
+        self.assertTrue(nfa.accept("ab"))
+        self.assertTrue(nfa.accept("babbaab"))
+        self.assertFalse(nfa.accept("abb"))
+        self.assertFalse(nfa.accept("aaabb"))
 
 class TestRG(unittest.TestCase):
     """ Tests NFA <-> regular grammar conversions """
