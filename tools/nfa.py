@@ -154,8 +154,7 @@ class NFA():
             self._states.copy(), self._alphabet.copy(),
             self._transitions.copy(), self._initial_state,
             self._final_states.copy())
-        nfa.determinize()
-        nfa.minimize()
+        nfa.remove_unreachable()
         return len(nfa._final_states) == 0
 
     def is_finite(self) -> bool:
@@ -255,11 +254,14 @@ class NFA():
 
         # create necessary states
         for actual, next_state in original_transitions.items():
-            self._determinize_state(next_state)
+            if len(next_state) > 1:
+                self._determinize_state(next_state)
 
         # rewrite transitions
-        for actual, next_state in self._transitions.items():
-            self._transitions[actual] = {"".join(sorted(next_state))}
+        self._transitions = {
+            actual: {"".join(sorted(next_state))}
+            for actual, next_state in self._transitions.items()
+        }
 
     def _determinize_state(self, states_set: Set[str]) -> None:
         """
@@ -274,8 +276,9 @@ class NFA():
                 self._final_states.add(name)
             for symbol in self._alphabet:
                 reachable = self._find_reachable(states_set, symbol)
-                self._transitions[name, symbol] = reachable
-                self._determinize_state(reachable)
+                if reachable:
+                    self._transitions[name, symbol] = reachable
+                    self._determinize_state(reachable)
 
     def _find_reachable(self, states: Set[str], symbol: str) -> Set[str]:
         """
@@ -290,14 +293,14 @@ class NFA():
         return found
 
     def is_deterministic(self) -> bool:
-        return all(len(transition) == 1
-            for transition in self._transitions.values())
+        return all(
+            len(transition) == 1 for transition in self._transitions.values())
 
     def beautify_qn(self) -> None:
         beautiful_states = {self._initial_state: "q0"}
 
-        beautiful_states.update({state: "q" + str(number + 1) \
-            for number, state in
+        beautiful_states.update({
+            state: "q" + str(number + 1) for number, state in
             enumerate(sorted(self._states - {self._initial_state}))})
 
         self._beautify(beautiful_states)
