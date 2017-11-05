@@ -10,9 +10,9 @@ class NFA():
 
         All operations over automata are implemented here, this class
         represents a NFA although it can be deterministic. The transition
-        function (delta) is represented as dictionary that maps (state, symbol)
-        -> Set[state], it is deterministic if all transitions take to only one
-        state.
+        function (delta) is represented as a dictionary that maps 
+        (state, symbol) -> Set[state], it is deterministic if all transitions
+        take to only one state.
     """
 
     def __init__(
@@ -286,7 +286,7 @@ class NFA():
             len(transition) == 1 for transition in self._transitions.values())
 
     def is_empty(self) -> bool:
-        """ Checks if the language defined by the automata is empty """
+        """ Checks if the language defined by the automaton is empty """
         nfa = NFA(
             self._states.copy(), self._alphabet.copy(),
             self._transitions.copy(), self._initial_state,
@@ -295,12 +295,12 @@ class NFA():
         return len(nfa.final_states) == 0
 
     def is_finite(self) -> bool:
-        """ Checks if the language defined by the automata is finite """
+        """ Checks if the language defined by the automaton is finite """
         return not self._has_recursion(deque([self._initial_state]), set())
 
     def _has_recursion(self, to_visit: Deque[str], visited: Set[str]) -> bool:
         """
-            Checks if the automata has recursive states, using a breadth
+            Checks if the automaton has recursive states, using a breadth
             first search approach.
         """
         if not to_visit:
@@ -360,34 +360,37 @@ class NFA():
             beautiful_states[state] for state in self._final_states
         }
 
-    def union(self, automata: 'NFA') -> None:
+    def union(self, automaton: 'NFA') -> None:
         """
-            Makes the union of two automatas, without epsilon transitions,
+            Makes the union of two automata, without epsilon transitions,
             and saves it on the actual object.
         """
-        if self.alphabet != automata.alphabet:
+        if self.alphabet != automaton.alphabet:
             raise RuntimeError("The alphabets are different!")
 
         self.beautify_abc()
-        automata.beautify_qn()
-        
-        first_initial = self._initial_state
-        second_initial = automata.initial_state
+        automaton.beautify_qn()
 
-        new_state = chr(ord(sorted(self._states)[-1]) + 1)
+        first_initial = self._initial_state
+        second_initial = automaton.initial_state
+
+        new_state = "qinitial"
         self.add_state(new_state)
         self._initial_state = new_state
 
         # Merge states
-        self._states.update(automata.states)
-        self._final_states.update(automata.final_states)
-        self._transitions.update(automata.transition_table)
+        self._states.update(automaton.states)
+        self._final_states.update(automaton.final_states)
+        self._transitions.update(automaton.transition_table)
+        initial_states = set([first_initial, second_initial])
+        if initial_states.intersection(self._final_states) != None:
+            self._final_states.update([new_state])
 
         # Creates a new initial state
         for symbol in self._alphabet:
             new_transition = set()
             first_transition = self._transitions.get((first_initial, symbol))
-            second_transition = automata.transition_table.get(
+            second_transition = automaton.transition_table.get(
                     (second_initial, symbol))
             new_transition.update(
                     set() if first_transition == None else first_transition)
@@ -399,28 +402,32 @@ class NFA():
 
     def complement(self) -> None:
         """
-            Finds the AF which recognizes the language that is the complement
-            of the actual AF.
+            Finds the automaton which recognizes the language that is the
+            complement of the actual automaton
         """
         self.determinize()
-        self.beautify_abc()
         self._explicit_dead_transitions()
         for state in self._states:
             self.toggle_final_state(state)
 
-    def intersection(self, automata: 'NFA') -> None:
-        automata.complement()
+    def intersection(self, automaton: 'NFA') -> None:
+        """
+            Finds the automaton which recognizes the language that is the
+            intersection of the actual automaton with the given one.
+        """
+        automaton.complement()
         self.complement()
-        self.union(automata)
+        self.union(automaton)
         self.complement()
 
     def _explicit_dead_transitions(self) -> None:
-        new_state = chr(ord(sorted(self._states)[-1]) + 1)
+        self.beautify_qn()
+        new_state = 'qdead'
         self.add_state(new_state)
         for state in self._states:
             for symbol in self._alphabet:
                 if (state, symbol) not in self._transitions:
-                    self._transitions[state, symbol] = new_state
+                    self._transitions[state, symbol] = {new_state}
 
     @staticmethod
     def from_regular_grammar(grammar):

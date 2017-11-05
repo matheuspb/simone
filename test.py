@@ -111,6 +111,23 @@ class TestNFA(unittest.TestCase):
         self.assertFalse(nfa.accept("abb"))
         self.assertFalse(nfa.accept("aaabb"))
 
+    def test_intersection(self) -> None:
+        first_nfa = NFA.load("examples/aaORbb.json")
+        second_nfa = NFA.load("examples/aa.json")
+
+        first_nfa.intersection(second_nfa)
+        self.assertTrue(first_nfa.accept("aa"))
+        self.assertFalse(first_nfa.accept(""))
+        self.assertFalse(first_nfa.accept("bb"))
+        self.assertFalse(first_nfa.accept("bbaa"))
+
+        first_nfa = NFA.load("examples/bb.json")
+        second_nfa = NFA.load("examples/aa.json")
+
+        first_nfa.intersection(second_nfa)
+        self.assertTrue(first_nfa.is_empty())
+
+
 class TestRG(unittest.TestCase):
     """ Tests NFA <-> regular grammar conversions """
 
