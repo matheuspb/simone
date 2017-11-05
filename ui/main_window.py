@@ -177,6 +177,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self._test_emptiness()
 
     def _update_table(self) -> None:
+        # avoid useless calls to _update_nfa()
+        self.transitionTable.cellChanged.disconnect(self._update_nfa)
+
         states = []
         for state in self._nfa.states:
             preffix = ""
@@ -203,6 +206,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     i, j, QTableWidgetItem(transition))
 
         self._test_emptiness()
+
+        # reconnect
+        self.transitionTable.cellChanged.connect(self._update_nfa)
 
     def _update_grammar_text(self) -> None:
         """
