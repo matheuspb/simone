@@ -1,4 +1,5 @@
-from typing import Dict, List, Set, Tuple
+from typing import Any, Dict, FrozenSet, List, Set, Tuple
+from functools import lru_cache
 from tools.nfa import NFA
 
 END = "$"
@@ -30,14 +31,16 @@ class Node():
     def __hash__(self):
         return hash(self.label)
 
-    def down(self, visited=None):
+    @lru_cache(maxsize=128)
+    def down(self, visited: FrozenSet[Any]=None) -> Set[Any]:
+        """ Returns the set of reachable nodes by going down on this node """
         if visited is None:
-            visited = set()
+            visited = frozenset()
 
         if self in visited:
             return {self} if self.symbol not in OPERATORS else set()
 
-        visited.add(self)
+        visited |= {self}
         if self.symbol == "|":
             return self.left.down(visited) | self.right.down(visited)
         elif self.symbol == ".":
@@ -46,9 +49,11 @@ class Node():
             return self.left.down(visited) | self.right.up(visited)
         return {self}
 
-    def up(self, visited=None):
+    @lru_cache(maxsize=128)
+    def up(self, visited: FrozenSet[Any]=None) -> Set[Any]:
+        """ Returns the set of reachable nodes by going up on this node """
         if visited is None:
-            visited = set()
+            visited = frozenset()
 
         if self.symbol == '|':
             # skip the whole right sub tree
@@ -224,4 +229,6 @@ def regex_to_dfa(regex: str) -> NFA:
 
             transitions[state, symbol] = {new_state}
 
+    Node.up.cache_clear()
+    Node.down.cache_clear()
     return NFA(states, alphabet, transitions, initial_state, final_states)

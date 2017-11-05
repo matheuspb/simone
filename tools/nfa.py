@@ -5,6 +5,15 @@ import json
 
 
 class NFA():
+    """
+        Non-deterministic finite automaton.
+
+        All operations over automata are implemented here, this class
+        represents a NFA although it can be deterministic. The transition
+        function (delta) is represented as dictionary that maps (state, symbol)
+        -> Set[state], it is deterministic if all transitions take to only one
+        state.
+    """
 
     def __init__(
             self,
@@ -21,31 +30,38 @@ class NFA():
 
     @property
     def states(self) -> List[str]:
+        """ Returns an ordered list of states """
         return [self._initial_state] + \
             sorted(self._states - {self._initial_state})
 
     @property
     def alphabet(self) -> List[str]:
+        """ Returns an ordered list of symbols """
         return sorted(self._alphabet)
 
     @property
     def transition_table(self) -> Dict[Tuple[str, str], Set[str]]:
+        """ Returns the transition function, a dictionary """
         return self._transitions
 
     @property
     def initial_state(self) -> str:
+        """ Returns the initial state """
         return self._initial_state
 
     @property
     def final_states(self) -> Set[str]:
+        """ Returns the set of final states """
         return self._final_states
 
     def add_state(self, state: str) -> None:
+        """ Adds a state """
         if not self._initial_state:
             self._initial_state = state
         self._states.add(state)
 
     def remove_state(self, state: str) -> None:
+        """ Removes a state """
         # may not remove initial state
         if state != self._initial_state:
             self._states.discard(state)
@@ -67,6 +83,7 @@ class NFA():
                 del self._transitions[transition]
 
     def toggle_final_state(self, state: str) -> None:
+        """ Toggle a state to be final or not """
         if state in self._states:
             if state in self._final_states:
                 self._final_states.remove(state)
@@ -74,9 +91,11 @@ class NFA():
                 self._final_states.add(state)
 
     def add_symbol(self, symbol: str) -> None:
+        """ Adds a symbol """
         self._alphabet.add(symbol)
 
     def remove_symbol(self, symbol: str) -> None:
+        """ Removes a symbol """
         self._alphabet.discard(symbol)
         for state in self._states:
             # remove transitions by the removed symbol
@@ -85,6 +104,7 @@ class NFA():
 
     def set_transition(
             self, state: str, symbol: str, next_states: Set[str]) -> None:
+        """ Set the transition function for a given state and symbol """
         if not next_states:
             # assert transition won't exist
             self._transitions.pop((state, symbol), set())
@@ -111,6 +131,10 @@ class NFA():
         return bool(current_state.intersection(self._final_states))
 
     def minimize(self) -> None:
+        """
+            Transforms the automaton in the correspondent minimal automaton,
+            that is, without dead, unreachable and equivalent states
+        """
         if not self.is_deterministic():
             raise RuntimeError("Automata is non-deterministic")
 
@@ -148,45 +172,8 @@ class NFA():
         for dead_state in self._states - alive:
             self.remove_state(dead_state)
 
-    def is_empty(self) -> bool:
-        """ Checks if the language defined by the automata is empty """
-        nfa = NFA(
-            self._states.copy(), self._alphabet.copy(),
-            self._transitions.copy(), self._initial_state,
-            self._final_states.copy())
-        nfa.determinize()
-        nfa.minimize()
-        return len(nfa._final_states) == 0
-
-    def is_finite(self) -> bool:
-        """ Checks if the language defined by the automata is finite """
-        return not self._has_recursion(deque([self._initial_state]), set())
-
-    def _has_recursion(self, to_visit: Deque[str], visited: Set[str]) -> bool:
-        """
-            Checks if the automata has recursive states, using a breadth
-            first search approach.
-        """
-        if not to_visit:
-            return False
-
-        reachable = set()  # type: Set[str]
-        actual_state = to_visit.popleft()
-        visited.add(actual_state)
-
-        # Find the reachable through all symbols
-        for symbol in self._alphabet:
-            reachable.update(self._find_reachable({actual_state}, symbol))
-        # Recursion detected
-        if reachable.intersection(visited):
-            return True
-
-        for state_to_visit in reachable.difference(visited):
-            to_visit.append(state_to_visit)
-
-        return self._has_recursion(to_visit, visited)
-
     def merge_equivalent(self) -> None:
+        """ Merges equivalent states """
         if not self.is_deterministic():
             raise RuntimeError("Automata is non-deterministic")
 
@@ -254,12 +241,15 @@ class NFA():
         original_transitions = self._transitions.copy()
 
         # create necessary states
-        for actual, next_state in original_transitions.items():
-            self._determinize_state(next_state)
+        for next_state in original_transitions.values():
+            if len(next_state) > 1:
+                self._determinize_state(next_state)
 
         # rewrite transitions
-        for actual, next_state in self._transitions.items():
-            self._transitions[actual] = {"".join(sorted(next_state))}
+        self._transitions = {
+            actual: {"".join(sorted(next_state))}
+            for actual, next_state in self._transitions.items()
+        }
 
     def _determinize_state(self, states_set: Set[str]) -> None:
         """
@@ -274,8 +264,9 @@ class NFA():
                 self._final_states.add(name)
             for symbol in self._alphabet:
                 reachable = self._find_reachable(states_set, symbol)
-                self._transitions[name, symbol] = reachable
-                self._determinize_state(reachable)
+                if reachable:
+                    self._transitions[name, symbol] = reachable
+                    self._determinize_state(reachable)
 
     def _find_reachable(self, states: Set[str], symbol: str) -> Set[str]:
         """
@@ -290,19 +281,59 @@ class NFA():
         return found
 
     def is_deterministic(self) -> bool:
-        return all(len(transition) == 1
-            for transition in self._transitions.values())
+        """ Checks if the automaton is deterministic """
+        return all(
+            len(transition) == 1 for transition in self._transitions.values())
+
+    def is_empty(self) -> bool:
+        """ Checks if the language defined by the automata is empty """
+        nfa = NFA(
+            self._states.copy(), self._alphabet.copy(),
+            self._transitions.copy(), self._initial_state,
+            self._final_states.copy())
+        nfa.remove_unreachable()
+        return len(nfa.final_states) == 0
+
+    def is_finite(self) -> bool:
+        """ Checks if the language defined by the automata is finite """
+        return not self._has_recursion(deque([self._initial_state]), set())
+
+    def _has_recursion(self, to_visit: Deque[str], visited: Set[str]) -> bool:
+        """
+            Checks if the automata has recursive states, using a breadth
+            first search approach.
+        """
+        if not to_visit:
+            return False
+
+        reachable = set()  # type: Set[str]
+        actual_state = to_visit.popleft()
+        visited.add(actual_state)
+
+        # Find the reachable through all symbols
+        for symbol in self._alphabet:
+            reachable.update(self._find_reachable({actual_state}, symbol))
+        # Recursion detected
+        if reachable.intersection(visited):
+            return True
+
+        for state_to_visit in reachable.difference(visited):
+            to_visit.append(state_to_visit)
+
+        return self._has_recursion(to_visit, visited)
 
     def beautify_qn(self) -> None:
+        """ Transforms all states to q1,q2,...,qn """
         beautiful_states = {self._initial_state: "q0"}
 
-        beautiful_states.update({state: "q" + str(number + 1) \
-            for number, state in
+        beautiful_states.update({
+            state: "q" + str(number + 1) for number, state in
             enumerate(sorted(self._states - {self._initial_state}))})
 
         self._beautify(beautiful_states)
 
     def beautify_abc(self) -> None:
+        """ Transforms all states to S,A,B,...,Z """
         if len(self._states) > 26:
             raise RuntimeError("Too many states")
 
@@ -393,6 +424,7 @@ class NFA():
 
     @staticmethod
     def from_regular_grammar(grammar):
+        """ Converts RegularGrammar to NFA """
         initial_symbol = grammar.initial_symbol()
         productions = grammar.productions()
 
@@ -417,6 +449,7 @@ class NFA():
         return NFA(states, alphabet, transitions, initial_state, final_states)
 
     def save(self, path: str):
+        """ Saves the automaton to a JSON file """
         data = {}  # type: Dict[str, Any]
         data["states"] = sorted(self._states)
         data["alphabet"] = sorted(self._alphabet)
@@ -429,6 +462,7 @@ class NFA():
 
     @staticmethod
     def load(path: str):
+        """ Loads the automaton from a JSON file """
         with open(path, 'r') as automata_file:
             data = json.load(automata_file)
         states = set(data["states"])
