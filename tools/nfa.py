@@ -322,12 +322,12 @@ class NFA():
 
         return self._has_recursion(to_visit, visited)
 
-    def beautify_qn(self) -> None:
+    def beautify_qn(self, begin_at=0) -> None:
         """ Transforms all states to q1,q2,...,qn """
-        beautiful_states = {self._initial_state: "q0"}
+        beautiful_states = {self._initial_state: "q" + str(begin_at)}
 
         beautiful_states.update({
-            state: "q" + str(number + 1) for number, state in
+            state: "q" + str(begin_at + number + 1) for number, state in
             enumerate(sorted(self._states - {self._initial_state}))})
 
         self._beautify(beautiful_states)
@@ -368,8 +368,8 @@ class NFA():
         if self.alphabet != automaton.alphabet:
             raise RuntimeError("The alphabets are different!")
 
-        self.beautify_abc()
-        automaton.beautify_qn()
+        self.beautify_qn()
+        automaton.beautify_qn(len(self.states))
 
         first_initial = self._initial_state
         second_initial = automaton.initial_state
@@ -397,8 +397,6 @@ class NFA():
             new_transition.update(
                     set() if second_transition == None else second_transition)
             self._transitions[new_state, symbol] = new_transition
-
-        self.beautify_qn()
 
     def complement(self) -> None:
         """
