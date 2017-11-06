@@ -251,6 +251,8 @@ class NFA():
             for actual, next_state in self._transitions.items()
         }
 
+        self.remove_unreachable()
+
     def _determinize_state(self, states_set: Set[str]) -> None:
         """
             For a given set of states, verify whether they pertains to the
