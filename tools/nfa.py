@@ -322,7 +322,7 @@ class NFA():
 
         return self._has_recursion(to_visit, visited)
 
-    def beautify_qn(self, begin_at=0) -> None:
+    def beautify_qn(self, begin_at: int=0) -> None:
         """ Transforms all states to q1,q2,...,qn """
         beautiful_states = {self._initial_state: "q" + str(begin_at)}
 
@@ -365,38 +365,33 @@ class NFA():
             Makes the union of two automata, without epsilon transitions,
             and saves it on the actual object.
         """
-        if self.alphabet != automaton.alphabet:
-            raise RuntimeError("The alphabets are different!")
+        self._alphabet.update(automaton._alphabet)
 
         self.beautify_qn()
-        automaton.beautify_qn(len(self.states))
-
-        first_initial = self._initial_state
-        second_initial = automaton.initial_state
+        automaton.beautify_qn(len(self._states))
 
         new_state = "qinitial"
-        self.add_state(new_state)
-        self._initial_state = new_state
+        self._states.add(new_state)
 
         # Merge states
-        self._states.update(automaton.states)
-        self._final_states.update(automaton.final_states)
-        self._transitions.update(automaton.transition_table)
-        initial_states = {first_initial, second_initial}
-        if initial_states.intersection(self._final_states):
-            self._final_states.update([new_state])
+        self._states.update(automaton._states)
+        self._final_states.update(automaton._final_states)
+        self._transitions.update(automaton._transitions)
+        if any(
+                initial_state in self._final_states
+                for initial_state in
+                {self._initial_state, automaton._initial_state}):
+            self._final_states.add(new_state)
 
-        # Creates a new initial state
+        # Creates transitions of the new initial state
         for symbol in self._alphabet:
-            new_transition = set()
-            first_transition = self._transitions.get((first_initial, symbol))
-            second_transition = automaton.transition_table.get(
-                    (second_initial, symbol))
-            new_transition.update(
-                    set() if first_transition is None else first_transition)
-            new_transition.update(
-                    set() if second_transition is None else second_transition)
-            self._transitions[new_state, symbol] = new_transition
+            self.set_transition(new_state, symbol,
+                self._transitions.get(
+                    (self._initial_state, symbol), set()) |
+                automaton.transition_table.get(
+                    (automaton._initial_state, symbol), set()))
+
+        self._initial_state = new_state
 
     def complement(self) -> None:
         """
@@ -428,14 +423,14 @@ class NFA():
                     self._transitions[state, symbol] = {new_state}
 
     @staticmethod
-    def from_regular_grammar(grammar):
+    def from_regular_grammar(grammar) -> 'NFA':
         """ Converts RegularGrammar to NFA """
         initial_symbol = grammar.initial_symbol()
         productions = grammar.productions()
 
         states = set(productions.keys()) | {"X"}
-        alphabet = set()
-        transitions = {}
+        alphabet = set()  # type: Set[str]
+        transitions = {}  # type: Dict[Tuple[str, str], Set[str]]
         initial_state = initial_symbol
         final_states = set("X") | \
             ({initial_symbol} if "&" in productions[initial_symbol] else set())
@@ -453,7 +448,7 @@ class NFA():
 
         return NFA(states, alphabet, transitions, initial_state, final_states)
 
-    def save(self, path: str):
+    def save(self, path: str) -> None:
         """ Saves the automaton to a JSON file """
         data = {}  # type: Dict[str, Any]
         data["states"] = sorted(self._states)
@@ -466,7 +461,7 @@ class NFA():
             json.dump(data, automata_file, indent=4)
 
     @staticmethod
-    def load(path: str):
+    def load(path: str) -> 'NFA':
         """ Loads the automaton from a JSON file """
         with open(path, 'r') as automata_file:
             data = json.load(automata_file)
