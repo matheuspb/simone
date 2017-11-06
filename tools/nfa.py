@@ -10,7 +10,7 @@ class NFA():
 
         All operations over automata are implemented here, this class
         represents a NFA although it can be deterministic. The transition
-        function (delta) is represented as a dictionary that maps 
+        function (delta) is represented as a dictionary that maps
         (state, symbol) -> Set[state], it is deterministic if all transitions
         take to only one state.
     """
@@ -382,8 +382,8 @@ class NFA():
         self._states.update(automaton.states)
         self._final_states.update(automaton.final_states)
         self._transitions.update(automaton.transition_table)
-        initial_states = set([first_initial, second_initial])
-        if initial_states.intersection(self._final_states) != None:
+        initial_states = {first_initial, second_initial}
+        if initial_states.intersection(self._final_states):
             self._final_states.update([new_state])
 
         # Creates a new initial state
@@ -393,9 +393,9 @@ class NFA():
             second_transition = automaton.transition_table.get(
                     (second_initial, symbol))
             new_transition.update(
-                    set() if first_transition == None else first_transition)
+                    set() if first_transition is None else first_transition)
             new_transition.update(
-                    set() if second_transition == None else second_transition)
+                    set() if second_transition is None else second_transition)
             self._transitions[new_state, symbol] = new_transition
 
     def complement(self) -> None:
