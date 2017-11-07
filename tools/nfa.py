@@ -2,6 +2,7 @@ from typing import Any, Deque, Dict, FrozenSet, List, Set, Tuple
 from itertools import combinations
 from collections import deque
 import json
+import copy
 
 
 class NFA():
@@ -289,10 +290,7 @@ class NFA():
 
     def is_empty(self) -> bool:
         """ Checks if the language defined by the automata is empty """
-        nfa = NFA(
-            self._states.copy(), self._alphabet.copy(),
-            self._transitions.copy(), self._initial_state,
-            self._final_states.copy())
+        nfa = copy.deepcopy(self)
         nfa.remove_unreachable()
         return len(nfa.final_states) == 0
 
