@@ -68,6 +68,11 @@ class TestNFA(unittest.TestCase):
         self.assertTrue(nfa.is_empty())
 
         nfa = NFA.load("examples/useless_loop.json")
+        self.assertFalse(nfa.is_empty())
+        self.assertTrue(nfa.is_finite())
+
+        nfa = regex_to_dfa("aa|bbb|cccc")
+        self.assertFalse(nfa.is_empty())
         self.assertTrue(nfa.is_finite())
 
     def test_determinization(self) -> None:
