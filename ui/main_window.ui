@@ -202,7 +202,7 @@
      <x>0</x>
      <y>0</y>
      <width>600</width>
-     <height>20</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -234,23 +234,23 @@
      <addaction name="action_to_qn"/>
      <addaction name="action_to_abc"/>
     </widget>
-    <widget class="QMenu" name="menuOperations">
-     <property name="title">
-      <string>Operations</string>
-     </property>
-     <addaction name="actionUnion"/>
-     <addaction name="actionComplement"/>
-     <addaction name="actionIntersection"/>
-    </widget>
     <addaction name="actionDeterminize"/>
     <addaction name="separator"/>
     <addaction name="menuMinimize"/>
     <addaction name="separator"/>
     <addaction name="menuBeautify"/>
-    <addaction name="menuOperations"/>
+   </widget>
+   <widget class="QMenu" name="menuOperations">
+    <property name="title">
+     <string>Operations</string>
+    </property>
+    <addaction name="actionUnion"/>
+    <addaction name="actionComplement"/>
+    <addaction name="actionIntersection"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuTransformations"/>
+   <addaction name="menuOperations"/>
   </widget>
   <widget class="QStatusBar" name="statusbar">
    <property name="font">
@@ -340,6 +340,22 @@
    </property>
   </action>
  </widget>
+ <tabstops>
+  <tabstop>regexInput</tabstop>
+  <tabstop>regexToDFAButton</tabstop>
+  <tabstop>addSymbolButton</tabstop>
+  <tabstop>addStateButton</tabstop>
+  <tabstop>removeSymbolButton</tabstop>
+  <tabstop>removeStateButton</tabstop>
+  <tabstop>finalStateButton</tabstop>
+  <tabstop>transitionTable</tabstop>
+  <tabstop>inputString</tabstop>
+  <tabstop>testButton</tabstop>
+  <tabstop>tabWidget</tabstop>
+  <tabstop>grammarText</tabstop>
+  <tabstop>fromNFAbutton</tabstop>
+  <tabstop>toNFAbutton</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>
