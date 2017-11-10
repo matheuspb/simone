@@ -2,6 +2,7 @@ from typing import Any, Deque, Dict, FrozenSet, List, Set, Tuple
 from itertools import combinations
 from collections import deque
 import json
+import copy
 
 
 class NFA():
@@ -251,6 +252,8 @@ class NFA():
             for actual, next_state in self._transitions.items()
         }
 
+        self.remove_unreachable()
+
     def _determinize_state(self, states_set: Set[str]) -> None:
         """
             For a given set of states, verify whether they pertains to the
@@ -287,10 +290,7 @@ class NFA():
 
     def is_empty(self) -> bool:
         """ Checks if the language defined by the automaton is empty """
-        nfa = NFA(
-            self._states.copy(), self._alphabet.copy(),
-            self._transitions.copy(), self._initial_state,
-            self._final_states.copy())
+        nfa = copy.deepcopy(self)
         nfa.remove_unreachable()
         return len(nfa.final_states) == 0
 
@@ -385,8 +385,7 @@ class NFA():
 
         # Creates transitions of the new initial state
         for symbol in self._alphabet:
-            self.set_transition(
-                new_state, symbol,
+            self.set_transition(new_state, symbol,
                 self._transitions.get(
                     (self._initial_state, symbol), set()) |
                 automaton.transition_table.get(
@@ -400,7 +399,7 @@ class NFA():
             complement of the actual automaton
         """
         self.determinize()
-        self._complete()
+        self._explicit_dead_transitions()
         for state in self._states:
             self.toggle_final_state(state)
 
@@ -414,7 +413,7 @@ class NFA():
         self.union(automaton)
         self.complement()
 
-    def _complete(self) -> None:
+    def _explicit_dead_transitions(self) -> None:
         self.beautify_qn()
         new_state = 'qdead'
         self.add_state(new_state)
