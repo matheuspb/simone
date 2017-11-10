@@ -385,7 +385,8 @@ class NFA():
 
         # Creates transitions of the new initial state
         for symbol in self._alphabet:
-            self.set_transition(new_state, symbol,
+            self.set_transition(
+                new_state, symbol,
                 self._transitions.get(
                     (self._initial_state, symbol), set()) |
                 automaton.transition_table.get(
