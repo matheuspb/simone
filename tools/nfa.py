@@ -399,7 +399,7 @@ class NFA():
             complement of the actual automaton
         """
         self.determinize()
-        self._explicit_dead_transitions()
+        self._complete()
         for state in self._states:
             self.toggle_final_state(state)
 
@@ -413,7 +413,7 @@ class NFA():
         self.union(automaton)
         self.complement()
 
-    def _explicit_dead_transitions(self) -> None:
+    def _complete(self) -> None:
         self.beautify_qn()
         new_state = 'qdead'
         self.add_state(new_state)
