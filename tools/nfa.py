@@ -5,6 +5,9 @@ import json
 import copy
 
 
+DEAD_STATE = "qdead"
+
+
 class NFA():
     """
         Non-deterministic finite automaton.
@@ -178,6 +181,8 @@ class NFA():
         if not self.is_deterministic():
             raise RuntimeError("Automata is non-deterministic")
 
+        self._complete()
+
         # pairs of undistinguishable states
         undistinguishable = set()  # type: Set[FrozenSet[str]]
 
@@ -201,6 +206,8 @@ class NFA():
         for state_a, state_b in undistinguishable:
             self._merge_states(state_a, state_b)
 
+        self.remove_state(DEAD_STATE)
+
     def _are_undistinguishable(
             self, state_a: str, state_b: str,
             undistinguishable: Set[FrozenSet[str]]) -> bool:
@@ -210,9 +217,9 @@ class NFA():
         """
         for symbol in self._alphabet:
             transition_a = \
-                list(self._transitions.get((state_a, symbol), {""}))[0]
+                list(self._transitions.get((state_a, symbol)))[0]
             transition_b = \
-                list(self._transitions.get((state_b, symbol), {""}))[0]
+                list(self._transitions.get((state_b, symbol)))[0]
             if transition_a != transition_b and \
                     frozenset((transition_a, transition_b)) not in \
                     undistinguishable:
@@ -415,13 +422,11 @@ class NFA():
         self.complement()
 
     def _complete(self) -> None:
-        self.beautify_qn()
-        new_state = 'qdead'
-        self.add_state(new_state)
+        self.add_state(DEAD_STATE)
         for state in self._states:
             for symbol in self._alphabet:
                 if (state, symbol) not in self._transitions:
-                    self._transitions[state, symbol] = {new_state}
+                    self._transitions[state, symbol] = {DEAD_STATE}
 
     @staticmethod
     def from_regular_grammar(grammar) -> 'NFA':
