@@ -47,6 +47,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.action_to_abc.triggered.connect(self._beautify_abc)
         self.action_to_qn.triggered.connect(self._beautify_qn)
 
+        self.actionUnion.triggered.connect(self._union)
+        self.actionComplement.triggered.connect(self._complement)
+        self.actionIntersection.triggered.connect(self._intersection)
+
         self.transitionTable.cellChanged.connect(self._update_nfa)
 
         self._grammar = RegularGrammar()
@@ -156,6 +160,30 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self._nfa = NFA.from_regular_grammar(
                 parse_grammar_text(self.grammarText.toPlainText()))
             self._update_table()
+        except RuntimeError as error:
+            QMessageBox.information(self, "Error", error.args[0])
+
+    def _union(self) -> None:
+        try:
+            path, _ = QFileDialog.getOpenFileName(self)
+            if path:
+                second_nfa = NFA.load(path)
+                self._nfa.union(second_nfa)
+                self._update_table()
+        except RuntimeError as error:
+            QMessageBox.information(self, "Error", error.args[0])
+
+    def _complement(self) -> None:
+        self._nfa.complement()
+        self._update_table()
+
+    def _intersection(self) -> None:
+        try:
+            path, _ = QFileDialog.getOpenFileName(self)
+            if path:
+                second_nfa = NFA.load(path)
+                self._nfa.intersection(second_nfa)
+                self._update_table()
         except RuntimeError as error:
             QMessageBox.information(self, "Error", error.args[0])
 

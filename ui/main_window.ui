@@ -240,8 +240,17 @@
     <addaction name="separator"/>
     <addaction name="menuBeautify"/>
    </widget>
+   <widget class="QMenu" name="menuOperations">
+    <property name="title">
+     <string>Operations</string>
+    </property>
+    <addaction name="actionUnion"/>
+    <addaction name="actionComplement"/>
+    <addaction name="actionIntersection"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuTransformations"/>
+   <addaction name="menuOperations"/>
   </widget>
   <widget class="QStatusBar" name="statusbar">
    <property name="font">
@@ -315,7 +324,38 @@
     <string>to S,A,B,...,Z</string>
    </property>
   </action>
+  <action name="actionUnion">
+   <property name="text">
+    <string>Union</string>
+   </property>
+  </action>
+  <action name="actionComplement">
+   <property name="text">
+    <string>Complement</string>
+   </property>
+  </action>
+  <action name="actionIntersection">
+   <property name="text">
+    <string>Intersection</string>
+   </property>
+  </action>
  </widget>
+ <tabstops>
+  <tabstop>regexInput</tabstop>
+  <tabstop>regexToDFAButton</tabstop>
+  <tabstop>addSymbolButton</tabstop>
+  <tabstop>addStateButton</tabstop>
+  <tabstop>removeSymbolButton</tabstop>
+  <tabstop>removeStateButton</tabstop>
+  <tabstop>finalStateButton</tabstop>
+  <tabstop>transitionTable</tabstop>
+  <tabstop>inputString</tabstop>
+  <tabstop>testButton</tabstop>
+  <tabstop>tabWidget</tabstop>
+  <tabstop>grammarText</tabstop>
+  <tabstop>fromNFAbutton</tabstop>
+  <tabstop>toNFAbutton</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

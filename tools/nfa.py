@@ -11,9 +11,9 @@ class NFA():
 
         All operations over automata are implemented here, this class
         represents a NFA although it can be deterministic. The transition
-        function (delta) is represented as dictionary that maps (state, symbol)
-        -> Set[state], it is deterministic if all transitions take to only one
-        state.
+        function (delta) is represented as a dictionary that maps
+        (state, symbol) -> Set[state], it is deterministic if all transitions
+        take to only one state.
     """
 
     def __init__(
@@ -289,18 +289,18 @@ class NFA():
             len(transition) == 1 for transition in self._transitions.values())
 
     def is_empty(self) -> bool:
-        """ Checks if the language defined by the automata is empty """
+        """ Checks if the language defined by the automaton is empty """
         nfa = copy.deepcopy(self)
         nfa.remove_unreachable()
         return len(nfa.final_states) == 0
 
     def is_finite(self) -> bool:
-        """ Checks if the language defined by the automata is finite """
+        """ Checks if the language defined by the automaton is finite """
         return not self._has_recursion(deque([self._initial_state]), set())
 
     def _has_recursion(self, to_visit: Deque[str], visited: Set[str]) -> bool:
         """
-            Checks if the automata has recursive states, using a breadth
+            Checks if the automaton has recursive states, using a breadth
             first search approach.
         """
         if not to_visit:
@@ -322,12 +322,12 @@ class NFA():
 
         return self._has_recursion(to_visit, visited)
 
-    def beautify_qn(self) -> None:
+    def beautify_qn(self, begin_at: int=0) -> None:
         """ Transforms all states to q1,q2,...,qn """
-        beautiful_states = {self._initial_state: "q0"}
+        beautiful_states = {self._initial_state: "q" + str(begin_at)}
 
         beautiful_states.update({
-            state: "q" + str(number + 1) for number, state in
+            state: "q" + str(begin_at + number + 1) for number, state in
             enumerate(sorted(self._states - {self._initial_state}))})
 
         self._beautify(beautiful_states)
@@ -360,15 +360,77 @@ class NFA():
             beautiful_states[state] for state in self._final_states
         }
 
+    def union(self, automaton: 'NFA') -> None:
+        """
+            Makes the union of two automata, without epsilon transitions,
+            and saves it on the actual object.
+        """
+        self._alphabet.update(automaton._alphabet)
+
+        self.beautify_qn()
+        automaton.beautify_qn(len(self._states))
+
+        new_state = "qinitial"
+        self._states.add(new_state)
+
+        # Merge states
+        self._states.update(automaton._states)
+        self._final_states.update(automaton._final_states)
+        self._transitions.update(automaton._transitions)
+        if any(
+                initial_state in self._final_states
+                for initial_state in
+                {self._initial_state, automaton._initial_state}):
+            self._final_states.add(new_state)
+
+        # Creates transitions of the new initial state
+        for symbol in self._alphabet:
+            self.set_transition(new_state, symbol,
+                self._transitions.get(
+                    (self._initial_state, symbol), set()) |
+                automaton.transition_table.get(
+                    (automaton._initial_state, symbol), set()))
+
+        self._initial_state = new_state
+
+    def complement(self) -> None:
+        """
+            Finds the automaton which recognizes the language that is the
+            complement of the actual automaton
+        """
+        self.determinize()
+        self._explicit_dead_transitions()
+        for state in self._states:
+            self.toggle_final_state(state)
+
+    def intersection(self, automaton: 'NFA') -> None:
+        """
+            Finds the automaton which recognizes the language that is the
+            intersection of the actual automaton with the given one.
+        """
+        automaton.complement()
+        self.complement()
+        self.union(automaton)
+        self.complement()
+
+    def _explicit_dead_transitions(self) -> None:
+        self.beautify_qn()
+        new_state = 'qdead'
+        self.add_state(new_state)
+        for state in self._states:
+            for symbol in self._alphabet:
+                if (state, symbol) not in self._transitions:
+                    self._transitions[state, symbol] = {new_state}
+
     @staticmethod
-    def from_regular_grammar(grammar):
+    def from_regular_grammar(grammar) -> 'NFA':
         """ Converts RegularGrammar to NFA """
         initial_symbol = grammar.initial_symbol()
         productions = grammar.productions()
 
         states = set(productions.keys()) | {"X"}
-        alphabet = set()
-        transitions = {}
+        alphabet = set()  # type: Set[str]
+        transitions = {}  # type: Dict[Tuple[str, str], Set[str]]
         initial_state = initial_symbol
         final_states = set("X") | \
             ({initial_symbol} if "&" in productions[initial_symbol] else set())
@@ -386,7 +448,7 @@ class NFA():
 
         return NFA(states, alphabet, transitions, initial_state, final_states)
 
-    def save(self, path: str):
+    def save(self, path: str) -> None:
         """ Saves the automaton to a JSON file """
         data = {}  # type: Dict[str, Any]
         data["states"] = sorted(self._states)
@@ -399,7 +461,7 @@ class NFA():
             json.dump(data, automata_file, indent=4)
 
     @staticmethod
-    def load(path: str):
+    def load(path: str) -> 'NFA':
         """ Loads the automaton from a JSON file """
         with open(path, 'r') as automata_file:
             data = json.load(automata_file)
