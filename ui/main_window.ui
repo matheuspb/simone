@@ -79,21 +79,21 @@
               <item>
                <widget class="QPushButton" name="removeSymbolButton">
                 <property name="text">
-                 <string>Remove Symbol</string>
+                 <string>Remove Symbols</string>
                 </property>
                </widget>
               </item>
               <item>
                <widget class="QPushButton" name="removeStateButton">
                 <property name="text">
-                 <string>Remove State</string>
+                 <string>Remove States</string>
                 </property>
                </widget>
               </item>
               <item>
                <widget class="QPushButton" name="finalStateButton">
                 <property name="text">
-                 <string>Toggle final state</string>
+                 <string>Toggle final states</string>
                 </property>
                </widget>
               </item>
