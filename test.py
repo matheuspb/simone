@@ -127,6 +127,22 @@ class TestNFA(unittest.TestCase):
         first_nfa.intersection(second_nfa)
         self.assertTrue(first_nfa.is_empty())
 
+    def test_containment(self) -> None:
+        first_nfa = NFA.load("examples/aaORbb.json")
+        second_nfa = NFA.load("examples/aa.json")
+
+        self.assertTrue(first_nfa.contains(second_nfa))
+        self.assertFalse(second_nfa.contains(first_nfa))
+
+    def test_equivalence(self) -> None:
+        first_nfa = NFA.load("examples/aaORbb.json")
+        second_nfa = NFA.load("examples/one1.json")
+
+        self.assertFalse(first_nfa.is_equal(second_nfa))
+        self.assertFalse(second_nfa.is_equal(first_nfa))
+        self.assertTrue(first_nfa.is_equal(first_nfa))
+        self.assertTrue(second_nfa.is_equal(second_nfa))
+
 
 class TestRG(unittest.TestCase):
     """ Tests NFA <-> regular grammar conversions """
