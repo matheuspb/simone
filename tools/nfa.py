@@ -296,31 +296,37 @@ class NFA():
 
     def is_finite(self) -> bool:
         """ Checks if the language defined by the automata is finite """
-        return not self._has_recursion(deque([self._initial_state]), set())
+        nfa = copy.deepcopy(self)
+        nfa.remove_dead()
+        return not nfa._has_recursion(deque([self._initial_state]), set())
 
     def _has_recursion(self, to_visit: Deque[str], visited: Set[str]) -> bool:
         """
-            Checks if the automata has recursive states, using a breadth
+            Checks if the automata has recursive states, using a depth
             first search approach.
         """
         if not to_visit:
             return False
 
-        reachable = set()  # type: Set[str]
         actual_state = to_visit.popleft()
+        if actual_state in visited:
+                return True
+
         visited.add(actual_state)
+        reachable = set()  # type: Set[str]
 
         # Find the reachable through all symbols
         for symbol in self._alphabet:
             reachable.update(self._find_reachable({actual_state}, symbol))
-        # Recursion detected
-        if reachable.intersection(visited):
-            return True
 
-        for state_to_visit in reachable.difference(visited):
+        for state_to_visit in reachable:
             to_visit.append(state_to_visit)
 
-        return self._has_recursion(to_visit, visited)
+            # Recursion detected
+            if self._has_recursion(to_visit, copy.deepcopy(visited)):
+                return True
+
+        return False
 
     def beautify_qn(self) -> None:
         """ Transforms all states to q1,q2,...,qn """
