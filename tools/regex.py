@@ -81,7 +81,7 @@ class RegExpParser():
     """ Recursive descent regex parser """
 
     def __init__(self, regex: str) -> None:
-        self._input_regex = regex
+        self._input_regex = regex.replace(".", "")
         self._pos = 0  # position of the next symbol
         self._nodes = 0  # number nodes created, used to label them
 
