@@ -22,9 +22,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.addSymbolButton.clicked.connect(self._add_symbols)
         self.addStateButton.clicked.connect(self._add_states)
-        self.removeSymbolButton.clicked.connect(self._remove_symbol)
-        self.removeStateButton.clicked.connect(self._remove_state)
-        self.finalStateButton.clicked.connect(self._toggle_final_state)
+        self.removeSymbolButton.clicked.connect(self._remove_symbols)
+        self.removeStateButton.clicked.connect(self._remove_states)
+        self.finalStateButton.clicked.connect(self._toggle_final_states)
 
         self.fromNFAbutton.clicked.connect(self._nfa_to_grammar)
         self.toNFAbutton.clicked.connect(self._grammar_to_nfa)
@@ -46,6 +46,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.action_to_abc.triggered.connect(self._beautify_abc)
         self.action_to_qn.triggered.connect(self._beautify_qn)
+
+        self.actionUnion.triggered.connect(self._union)
+        self.actionComplement.triggered.connect(self._complement)
+        self.actionIntersection.triggered.connect(self._intersection)
 
         self.transitionTable.cellChanged.connect(self._update_nfa)
 
@@ -76,22 +80,28 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self._nfa.add_state(state)
             self._update_table()
 
-    def _remove_symbol(self) -> None:
-        text, ok = QInputDialog.getText(self, "Remove symbol", "Symbol:")
+    def _remove_symbols(self) -> None:
+        text, ok = QInputDialog.getText(
+            self, "Remove symbols", "Symbols (a,b,c,...):")
         if ok:
-            self._nfa.remove_symbol(text)
+            for symbol in text.replace(" ", "").split(","):
+                self._nfa.remove_symbol(symbol)
             self._update_table()
 
-    def _remove_state(self) -> None:
-        text, ok = QInputDialog.getText(self, "Remove state", "State:")
+    def _remove_states(self) -> None:
+        text, ok = QInputDialog.getText(
+            self, "Remove states", "States (q0,q1,...):")
         if ok:
-            self._nfa.remove_state(text)
+            for state in text.replace(" ", "").split(","):
+                self._nfa.remove_state(state)
             self._update_table()
 
-    def _toggle_final_state(self) -> None:
-        text, ok = QInputDialog.getText(self, "Final state", "State:")
+    def _toggle_final_states(self) -> None:
+        text, ok = QInputDialog.getText(
+            self, "Final states", "States (q0,q1,...):")
         if ok:
-            self._nfa.toggle_final_state(text)
+            for state in text.replace(" ", "").split(","):
+                self._nfa.toggle_final_state(state)
             self._update_table()
 
     def _test_emptiness(self) -> None:
@@ -156,6 +166,30 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self._nfa = NFA.from_regular_grammar(
                 parse_grammar_text(self.grammarText.toPlainText()))
             self._update_table()
+        except RuntimeError as error:
+            QMessageBox.information(self, "Error", error.args[0])
+
+    def _union(self) -> None:
+        try:
+            path, _ = QFileDialog.getOpenFileName(self)
+            if path:
+                second_nfa = NFA.load(path)
+                self._nfa.union(second_nfa)
+                self._update_table()
+        except RuntimeError as error:
+            QMessageBox.information(self, "Error", error.args[0])
+
+    def _complement(self) -> None:
+        self._nfa.complement()
+        self._update_table()
+
+    def _intersection(self) -> None:
+        try:
+            path, _ = QFileDialog.getOpenFileName(self)
+            if path:
+                second_nfa = NFA.load(path)
+                self._nfa.intersection(second_nfa)
+                self._update_table()
         except RuntimeError as error:
             QMessageBox.information(self, "Error", error.args[0])
 

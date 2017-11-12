@@ -1,5 +1,4 @@
 from typing import Dict, Set
-from tools.nfa import NFA
 
 
 class RegularGrammar():
@@ -34,7 +33,7 @@ class RegularGrammar():
         return self._productions
 
     @staticmethod
-    def from_nfa(nfa: NFA):
+    def from_nfa(nfa) -> 'RegularGrammar':
         """
             Returns a regular grammar that generates the language of the given
             NFA
