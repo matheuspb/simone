@@ -1,6 +1,5 @@
-from typing import Any, Deque, Dict, FrozenSet, List, Set, Tuple
+from typing import Any, Dict, FrozenSet, List, Set, Tuple
 from itertools import combinations
-from collections import deque
 import json
 import copy
 
@@ -303,31 +302,30 @@ class NFA():
 
     def is_finite(self) -> bool:
         """ Checks if the language defined by the automaton is finite """
-        return not self._has_recursion(deque([self._initial_state]), set())
+        nfa = copy.deepcopy(self)
+        nfa.remove_dead()
+        return not nfa._has_recursion(self._initial_state, set())
 
-    def _has_recursion(self, to_visit: Deque[str], visited: Set[str]) -> bool:
+    def _has_recursion(self, to_visit: str, visited: Set[str]) -> bool:
         """
-            Checks if the automaton has recursive states, using a breadth
+            Checks if the automata has recursive states, using a depth
             first search approach.
         """
-        if not to_visit:
-            return False
+        if to_visit in visited:
+                return True
 
+        visited.add(to_visit)
         reachable = set()  # type: Set[str]
-        actual_state = to_visit.popleft()
-        visited.add(actual_state)
 
         # Find the reachable through all symbols
         for symbol in self._alphabet:
-            reachable.update(self._find_reachable({actual_state}, symbol))
-        # Recursion detected
-        if reachable.intersection(visited):
-            return True
+            reachable.update(self._find_reachable({to_visit}, symbol))
 
-        for state_to_visit in reachable.difference(visited):
-            to_visit.append(state_to_visit)
+        for state in reachable:
+            if self._has_recursion(state, copy.deepcopy(visited)):
+                return True
 
-        return self._has_recursion(to_visit, visited)
+        return False
 
     def beautify_qn(self, begin_at: int=0) -> None:
         """ Transforms all states to q1,q2,...,qn """
