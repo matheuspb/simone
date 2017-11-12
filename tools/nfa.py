@@ -193,13 +193,14 @@ class NFA():
 
         # find new distinguishable states
         while True:
+            new_distinguishable_found = False
             undistinguishable_copy = undistinguishable.copy()
             for state_a, state_b in undistinguishable_copy:
                 if not self._are_undistinguishable(
                         state_a, state_b, undistinguishable_copy):
                     undistinguishable.remove(frozenset((state_a, state_b)))
-            if undistinguishable == undistinguishable_copy:
-                # no new distinguishable states were found
+                    new_distinguishable_found = True
+            if not new_distinguishable_found:
                 break
 
         for state_a, state_b in undistinguishable:
