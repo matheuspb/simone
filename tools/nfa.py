@@ -420,6 +420,22 @@ class NFA():
         self.union(automaton)
         self.complement()
 
+    def contains(self, automaton: 'NFA') -> bool:
+        """
+            Checks if the actual automaton contains another one.
+        """
+        first_nfa = copy.deepcopy(self)
+        second_nfa = copy.deepcopy(automaton)
+        first_nfa.complement()
+        second_nfa.intersection(first_nfa)
+        return second_nfa.is_empty()
+
+    def is_equal(self, automaton: 'NFA') -> bool:
+        """
+            Checks if two automata are equivalent.
+        """
+        return self.contains(automaton) and automaton.contains(self)
+
     def _complete(self) -> None:
         self.add_state(DEAD_STATE)
         for state in self._states:

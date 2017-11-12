@@ -50,6 +50,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionUnion.triggered.connect(self._union)
         self.actionComplement.triggered.connect(self._complement)
         self.actionIntersection.triggered.connect(self._intersection)
+        self.actionContains.triggered.connect(self._contains)
+        self.actionEquivalent.triggered.connect(self._is_equal)
 
         self.transitionTable.cellChanged.connect(self._update_nfa)
 
@@ -190,6 +192,38 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 second_nfa = NFA.load(path)
                 self._nfa.intersection(second_nfa)
                 self._update_table()
+        except RuntimeError as error:
+            QMessageBox.information(self, "Error", error.args[0])
+
+    def _contains(self) -> None:
+        try:
+            path, _ = QFileDialog.getOpenFileName(self)
+            if path:
+                second_nfa = NFA.load(path)
+                if self._nfa.contains(second_nfa):
+                    QMessageBox.information(
+                        self, "Contains",
+                        "The automaton contains the second one.")
+                else:
+                    QMessageBox.information(
+                        self, "Contains",
+                        "The automaton does not contain the second one.")
+        except RuntimeError as error:
+            QMessageBox.information(self, "Error", error.args[0])
+
+    def _is_equal(self) -> None:
+        try:
+            path, _ = QFileDialog.getOpenFileName(self)
+            if path:
+                second_nfa = NFA.load(path)
+                if self._nfa.is_equal(second_nfa):
+                    QMessageBox.information(
+                        self, "Equivalent",
+                        "The automata are equivalent.")
+                else:
+                    QMessageBox.information(
+                        self, "Equivalent",
+                        "The automata are not equivalent.")
         except RuntimeError as error:
             QMessageBox.information(self, "Error", error.args[0])
 

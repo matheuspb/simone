@@ -202,7 +202,7 @@
      <x>0</x>
      <y>0</y>
      <width>600</width>
-     <height>22</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -247,6 +247,8 @@
     <addaction name="actionUnion"/>
     <addaction name="actionComplement"/>
     <addaction name="actionIntersection"/>
+    <addaction name="actionContains"/>
+    <addaction name="actionEquivalent"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuTransformations"/>
@@ -337,6 +339,16 @@
   <action name="actionIntersection">
    <property name="text">
     <string>Intersection</string>
+   </property>
+  </action>
+  <action name="actionContains">
+   <property name="text">
+    <string>Contains</string>
+   </property>
+  </action>
+  <action name="actionEquivalent">
+   <property name="text">
+    <string>Equivalent to</string>
    </property>
   </action>
  </widget>
