@@ -201,11 +201,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             if path:
                 second_nfa = NFA.load(path)
                 if self._nfa.contains(second_nfa):
-                    QMessageBox.information(self, "Contains",
-                            "The automaton contains the second one.")
+                    QMessageBox.information(
+                        self, "Contains",
+                        "The automaton contains the second one.")
                 else:
-                    QMessageBox.information(self, "Contains",
-                            "The automaton does not contain the second one.")
+                    QMessageBox.information(
+                        self, "Contains",
+                        "The automaton does not contain the second one.")
         except RuntimeError as error:
             QMessageBox.information(self, "Error", error.args[0])
 
@@ -215,11 +217,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             if path:
                 second_nfa = NFA.load(path)
                 if self._nfa.is_equal(second_nfa):
-                    QMessageBox.information(self, "Equivalent",
-                            "The automata are equivalent.")
+                    QMessageBox.information(
+                        self, "Equivalent",
+                        "The automata are equivalent.")
                 else:
-                    QMessageBox.information(self, "Equivalent",
-                            "The automata are not equivalent.")
+                    QMessageBox.information(
+                        self, "Equivalent",
+                        "The automata are not equivalent.")
         except RuntimeError as error:
             QMessageBox.information(self, "Error", error.args[0])
 
