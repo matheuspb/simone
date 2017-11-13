@@ -47,9 +47,11 @@ class TestNFA(unittest.TestCase):
         false_cases = {"", "1", "101010111", "11101010"}
         self.nfa_test(nfa, true_cases, false_cases)
 
+        nfa = NFA.load("examples/endsWbb.json")
         with self.assertRaises(RuntimeError):
-            nfa = NFA.load("examples/endsWbb.json")
             nfa.minimize()
+        with self.assertRaises(RuntimeError):
+            nfa.merge_equivalent()
 
     def test_emptiness(self) -> None:
         nfa = NFA.load("examples/one1.json")
@@ -259,6 +261,9 @@ class TestRegex(unittest.TestCase):
 
         with self.assertRaises(RuntimeError):
             regex_to_dfa("a(a))*")
+
+        with self.assertRaises(RuntimeError):
+            regex_to_dfa("((((a|&")
 
 if __name__ == "__main__":
     unittest.main()

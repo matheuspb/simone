@@ -18,14 +18,6 @@ class Node():
         self.right = right
         self.label = label
 
-    def __str__(self):
-        return self.symbol + str(self.label)
-
-    def __eq__(self, other):
-        if other is None:
-            return False
-        return self.symbol == other.symbol and self.label == other.label
-
     def __hash__(self):
         return hash(self.label)
 
@@ -69,9 +61,6 @@ class Node():
             return self.right.up(visited)
         elif self.symbol == END:
             return {self}
-        else:
-            raise RuntimeError(
-                "Going up on invalid Node {}".format(self.symbol))
 
 
 END_NODE = Node(END, None, None, 0)
@@ -103,8 +92,6 @@ class RegExpParser():
     def _eat(self, char: str) -> None:
         if self._peek() == char:
             self._pos += 1
-        else:
-            raise RuntimeError("Invalid regex")
 
     def _follow(self) -> str:
         char = self._peek()
@@ -183,9 +170,6 @@ def regex_to_dfa(regex: str) -> NFA:
     """
     root = RegExpParser(regex).parse()
     thread_tree(root)
-
-    if root is None:
-        return NFA({"q0"}, set(), {}, "q0", {"q0"})
 
     alphabet = set()  # type: Set[str]
     transitions = {}  # type: Dict[Tuple[str, str], Set[str]]
