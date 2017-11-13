@@ -1,6 +1,9 @@
 # simone
 
-A finite automata editor, you may also express regular languages using regular grammars or expressions and then convert them to a FA.
+[![Build Status](https://travis-ci.org/matheuspb/simone.svg?branch=master)](https://travis-ci.org/matheuspb/simone)
+
+A finite automata editor, you may also express regular languages using regular
+grammars or expressions and then convert them to a FA.
 
 ### Algorithms implemented:
 
@@ -8,7 +11,8 @@ A finite automata editor, you may also express regular languages using regular g
 * Regular grammar to NFA
 * NFA to regular grammar
 * FA determinization and minimization
-* Union, complement and intersection of RLs (via NFAs without epsilon transitions)
+* Union, complement and intersection of RLs (via NFAs without epsilon
+  transitions)
 * Equivalence and containment of two RLs
 * Emptiness and finiteness of RLs
 
