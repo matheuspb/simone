@@ -236,5 +236,29 @@ class TestRegex(unittest.TestCase):
         self.assertTrue(automata.is_deterministic())
         test_nfa.nfa_test(automata, {""}, {"a", "ahgsdkjahsg"})
 
+        automata = regex_to_dfa("a|&")
+        self.assertTrue(automata.is_deterministic())
+        test_nfa.nfa_test(automata, {"", "a"}, {"aa", "ab"})
+
+        automata = regex_to_dfa("a||b")
+        self.assertTrue(automata.is_deterministic())
+        test_nfa.nfa_test(automata, {"a", "b"}, {"ba", "bb"})
+
+        automata = regex_to_dfa("a**")
+        self.assertTrue(automata.is_deterministic())
+        test_nfa.nfa_test(automata, {"", "a", "aaaa"}, {"b", "bbc"})
+
+        with self.assertRaises(RuntimeError):
+            regex_to_dfa("*")
+
+        with self.assertRaises(RuntimeError):
+            regex_to_dfa("?")
+
+        with self.assertRaises(RuntimeError):
+            regex_to_dfa("(a(a|b)*")
+
+        with self.assertRaises(RuntimeError):
+            regex_to_dfa("a(a))*")
+
 if __name__ == "__main__":
     unittest.main()
