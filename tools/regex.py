@@ -62,6 +62,8 @@ class Node():
         elif self.symbol == END:
             return {self}
 
+        return set()
+
 
 END_NODE = Node(END, None, None, 0)
 
