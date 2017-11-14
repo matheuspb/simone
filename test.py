@@ -47,6 +47,10 @@ class TestNFA(unittest.TestCase):
         false_cases = {"", "1", "101010111", "11101010"}
         self.nfa_test(nfa, true_cases, false_cases)
 
+        nfa = regex_to_dfa("aaa*|a*")
+        nfa.minimize()
+        self.assertEqual(len(nfa.states), 1)
+
         nfa = NFA.load("examples/endsWbb.json")
         with self.assertRaises(RuntimeError):
             nfa.minimize()
@@ -128,6 +132,11 @@ class TestNFA(unittest.TestCase):
         first_nfa = NFA.load("examples/bb.json")
         second_nfa = NFA.load("examples/aa.json")
 
+        first_nfa.intersection(second_nfa)
+        self.assertTrue(first_nfa.is_empty())
+
+        first_nfa = regex_to_dfa("a")
+        second_nfa = regex_to_dfa("b")
         first_nfa.intersection(second_nfa)
         self.assertTrue(first_nfa.is_empty())
 

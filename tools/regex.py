@@ -59,10 +59,8 @@ class Node():
             return self.left.down(visited) | self.right.up(visited)
         elif self.symbol == '?':
             return self.right.up(visited)
-        elif self.symbol == END:
+        else:  # self.symbol == END:
             return {self}
-
-        return set()
 
 
 END_NODE = Node(END, None, None, 0)
