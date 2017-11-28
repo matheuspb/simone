@@ -180,8 +180,6 @@ class NFA():
         if not self.is_deterministic():
             raise RuntimeError("Automata is non-deterministic")
 
-        self._complete()
-
         # pairs of undistinguishable states
         undistinguishable = set()  # type: Set[FrozenSet[str]]
 
@@ -206,8 +204,6 @@ class NFA():
         for state_a, state_b in undistinguishable:
             self._merge_states(state_a, state_b)
 
-        self.remove_state(DEAD_STATE)
-
     def _are_undistinguishable(
             self, state_a: str, state_b: str,
             undistinguishable: Set[FrozenSet[str]]) -> bool:
@@ -217,9 +213,9 @@ class NFA():
         """
         for symbol in self._alphabet:
             transition_a = \
-                list(self._transitions.get((state_a, symbol)))[0]
+                list(self._transitions.get((state_a, symbol), {""}))[0]
             transition_b = \
-                list(self._transitions.get((state_b, symbol)))[0]
+                list(self._transitions.get((state_b, symbol), {""}))[0]
             if transition_a != transition_b and \
                     frozenset((transition_a, transition_b)) not in \
                     undistinguishable:
@@ -372,8 +368,11 @@ class NFA():
             and saves it on the actual object.
         """
         self._alphabet.update(automaton._alphabet)
-
+        self._complete()
         self.beautify_qn()
+
+        automaton._alphabet.update(self._alphabet)
+        automaton._complete()
         automaton.beautify_qn(len(self._states))
 
         new_state = "qinitial"

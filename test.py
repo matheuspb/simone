@@ -47,6 +47,10 @@ class TestNFA(unittest.TestCase):
         false_cases = {"", "1", "101010111", "11101010"}
         self.nfa_test(nfa, true_cases, false_cases)
 
+        nfa = regex_to_dfa("aaa*|a*")
+        nfa.minimize()
+        self.assertEqual(len(nfa.states), 1)
+
         nfa = NFA.load("examples/endsWbb.json")
         with self.assertRaises(RuntimeError):
             nfa.minimize()
@@ -89,8 +93,8 @@ class TestNFA(unittest.TestCase):
 
         nfa = NFA.load("examples/bad_case.json")
         self.assertFalse(nfa.is_deterministic())
-        true_cases = {"bb", "abaabbabaabb", "babb", "abbabbabb"}
-        true_cases = {"baaa", "bbbb", "aababa", "bbbbbbbb"}
+        true_cases = {
+            "babb", "abbabbabb", "baaa", "bbbb", "aababa", "bbbbbbbb"}
         false_cases = {"", "abbb", "aaaaaa"}
         self.nfa_test(nfa, true_cases, false_cases)
         nfa.determinize()
@@ -99,44 +103,40 @@ class TestNFA(unittest.TestCase):
 
     def test_dead_removal(self) -> None:
         nfa = NFA.load("examples/one1.json")
-        self.assertTrue(nfa.states, set(['A', 'B', 'C', 'D', 'E', 'F']))
+        self.assertEqual(nfa.states, ['A', 'B', 'C', 'D', 'E', 'F'])
         nfa.remove_dead()
-        self.assertTrue(nfa.states, set(['A', 'B', 'C', 'D', 'E']))
+        self.assertEqual(nfa.states, ['A', 'B', 'C', 'D', 'E'])
 
     def test_union(self) -> None:
         first_nfa = NFA.load("examples/aa.json")
         second_nfa = NFA.load("examples/endsWbb.json")
 
         first_nfa.union(second_nfa)
-        self.assertTrue(first_nfa.accept("aa"))
-        self.assertTrue(first_nfa.accept("abb"))
-        self.assertTrue(first_nfa.accept("abbaabb"))
-        self.assertFalse(first_nfa.accept("abbaab"))
-        self.assertFalse(first_nfa.accept("ab"))
-        self.assertFalse(first_nfa.accept("aaa"))
+        self.nfa_test(
+            first_nfa, {"aa", "abb", "abbaabb"}, {"abbaab", "ab", "aaa"})
 
     def test_complement(self) -> None:
         nfa = NFA.load("examples/endsWbb.json")
 
         nfa.complement()
-        self.assertTrue(nfa.accept("ab"))
-        self.assertTrue(nfa.accept("babbaab"))
-        self.assertFalse(nfa.accept("abb"))
-        self.assertFalse(nfa.accept("aaabb"))
+        self.nfa_test(
+            nfa, {"ab", "babbaab"}, {"abb", "aaabb"})
 
     def test_intersection(self) -> None:
         first_nfa = NFA.load("examples/aaORbb.json")
         second_nfa = NFA.load("examples/aa.json")
 
         first_nfa.intersection(second_nfa)
-        self.assertTrue(first_nfa.accept("aa"))
-        self.assertFalse(first_nfa.accept(""))
-        self.assertFalse(first_nfa.accept("bb"))
-        self.assertFalse(first_nfa.accept("bbaa"))
+        self.nfa_test(first_nfa, {"aa"}, {"", "bb", "bbaa"})
 
         first_nfa = NFA.load("examples/bb.json")
         second_nfa = NFA.load("examples/aa.json")
 
+        first_nfa.intersection(second_nfa)
+        self.assertTrue(first_nfa.is_empty())
+
+        first_nfa = regex_to_dfa("a")
+        second_nfa = regex_to_dfa("b")
         first_nfa.intersection(second_nfa)
         self.assertTrue(first_nfa.is_empty())
 
