@@ -244,7 +244,6 @@ class TestRegex(unittest.TestCase):
         test_regex("a|&", {"", "a"}, {"aa", "ab"})
         test_regex("a||b", {"a", "b"}, {"ba", "bb"})
         test_regex("a**", {"", "a", "aaaa"}, {"b", "bbc"})
-        test_regex("a**", {"", "a", "aaaa"}, {"b", "bbc"})
         test_regex("(a|b)*b", {"b", "aaab", "bbb"}, {"", "a", "aaa", "bba"})
 
         test_bad_regex("*")
