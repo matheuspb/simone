@@ -240,9 +240,9 @@ class TestRegex(unittest.TestCase):
             "(a(ba)*a|ba)*(ab)*",
             {"", "aa", "ab", "ba", "aaaa", "baaaab", "aabaababaaba"},
             {"a", "b", "bb", "aabbaa", "ababa", "baaab"})
-        test_regex("", {""}, {"a", "ahgsdkjahsg"})
+        test_regex("&", {""}, {"a", "ahgsdkjahsg"})
         test_regex("a|&", {"", "a"}, {"aa", "ab"})
-        test_regex("a||b", {"a", "b"}, {"ba", "bb"})
+        test_regex("a|b|&", {"a", "b"}, {"ba", "bb"})
         test_regex("a**", {"", "a", "aaaa"}, {"b", "bbc"})
         test_regex("(a|b)*b", {"b", "aaab", "bbb"}, {"", "a", "aaa", "bba"})
 
@@ -251,6 +251,7 @@ class TestRegex(unittest.TestCase):
         test_bad_regex("(a(a|b)*")
         test_bad_regex("a(a))*")
         test_bad_regex("((((a|&")
+        test_bad_regex("(a)))")
 
 if __name__ == "__main__":
     unittest.main()

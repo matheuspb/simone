@@ -7,7 +7,7 @@ from tools.nfa import NFA
 END = "$"
 EPSILON = "&"
 OPERATORS = {"|", ".", "*", "?"}
-TERMINALS_PATTERN = re.compile("[A-z0-9&]")
+TERMINALS_PATTERN = re.compile(r"[A-z0-9&]")
 
 
 class Node():
@@ -79,10 +79,7 @@ class RegExpParser():
 
     def parse(self) -> Node:
         """ Returns the root node of the regex syntax tree """
-        try:
-            root = self._regex()
-        except IndexError:
-            raise RuntimeError("Invalid regex")
+        root = self._regex()
 
         if self._pos != len(self._input_regex):
             raise RuntimeError("Invalid regex")
@@ -90,11 +87,15 @@ class RegExpParser():
         return root
 
     def _peek(self) -> str:
-        return self._input_regex[self._pos]
+        return self._input_regex[self._pos] \
+            if self._pos < len(self._input_regex) \
+            else ''
 
     def _eat(self, char: str) -> None:
         if self._peek() == char:
             self._pos += 1
+        else:
+            raise RuntimeError("Invalid regex")
 
     def _follow(self) -> str:
         char = self._peek()
@@ -107,45 +108,43 @@ class RegExpParser():
     def _regex(self) -> Node:
         # <regex> ::= <term> '|' <regex> | <term>
         term = self._term()
-        if self._more() and self._peek() == '|':
-            self._eat('|')
+        if self._peek() == '|':
+            self._follow()
             regex = self._regex()
             return Node('|', term, regex)
         return term
 
     def _term(self) -> Node:
-        # <term> ::= { <factor> }
-        factor = Node(EPSILON, None, None)
-        while self._more() and self._peek() != ')' and self._peek() != '|':
-            next_factor = self._factor()
-            factor = Node('.', factor, next_factor)
+        # <term> ::= <factor> <term> | <factor>
+        factor = self._factor()
+        if self._more() and self._peek() != ')' and self._peek() != '|':
+            term = self._term()
+            factor = Node('.', factor, term)
         return factor
 
     def _factor(self) -> Node:
         # <factor> ::= <base> { '*' } | <base> { '?' }
         base = self._base()
         while self._more() and (self._peek() == '*' or self._peek() == '?'):
-            peek = self._peek()
-            self._eat(peek)
-            base = Node(peek, base, None)
+            base = Node(self._follow(), base, None)
         return base
 
     def _base(self) -> Node:
         # <base> ::= <char> | '(' <regex> ')'
-        if self._peek() == '(':
+        if TERMINALS_PATTERN.match(self._peek()):
+            return Node(self._follow(), None, None)
+        elif self._peek() == '(':
             self._eat('(')
             regex = self._regex()
             self._eat(')')
             return regex
-        if TERMINALS_PATTERN.match(self._peek()):
-            return Node(self._follow(), None, None)
         else:
             raise RuntimeError("Invalid regex")
 
 
 def thread_tree(root: Node) -> None:
     """ Threads the tree, making it easy to follow in order from any node """
-    stack = []  # type: List[Node]
+    stack: List[Node] = []
     node = root
     # traverse the tree in order
     while stack or node:
@@ -162,14 +161,14 @@ def thread_tree(root: Node) -> None:
 
 
 def regex_to_dfa(regex: str) -> NFA:
-    """ Transforms a RegEx into a DFA using the De Simone/Aho method. """
+    """ Transforms a RegExp into a DFA using the De Simone/Aho method. """
     root = RegExpParser(regex).parse()
     thread_tree(root)
 
-    alphabet = set()  # type: Set[str]
-    transitions = {}  # type: Dict[Tuple[str, str], Set[str]]
+    alphabet: Set[str] = set()
+    transitions: Dict[Tuple[str, str], Set[str]] = {}
     initial_state = "q0"
-    final_states = set()  # type: Set[str]
+    final_states: Set[str] = set()
     states = {initial_state}
 
     initial_nodes = frozenset(root.down())
@@ -179,7 +178,7 @@ def regex_to_dfa(regex: str) -> NFA:
 
     new_compositions = {initial_nodes}
     while new_compositions:
-        symbols = defaultdict(set)  # type: Dict[str, Set[Node]]
+        symbols: Dict[str, Set[Node]] = defaultdict(set)
         composition = new_compositions.pop()  # composition of the new state
 
         # separate nodes of the same symbol
@@ -191,7 +190,7 @@ def regex_to_dfa(regex: str) -> NFA:
         for symbol, nodes in symbols.items():
             # create composition of the new state, that is, the nodes of the
             # tree you're in, when you're in that state
-            new_state_composition = set()  # type: Set[Node]
+            new_state_composition: Set[Node] = set()
             for node in nodes:
                 new_state_composition.update(node.right.up())
             frozen_new_composition = frozenset(new_state_composition)
